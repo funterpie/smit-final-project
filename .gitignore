@@ -1,0 +1,67 @@
+# .gitignore — PR Risk Scorer
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+.python-version
+
+# --- Environment ---
+.env
+
+# --- Data & model artefacts (never commit large binaries) ---
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+models/artefacts/
+*.bin
+*.pt
+*.pth
+*.pkl
+*.onnx
+
+# --- FAISS index ---
+rag/index/
+
+# --- SQLite audit log ---
+audit.db
+*.db
+
+# --- IDE ---
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Node / Dashboard ---
+node_modules/
+dashboard/dist/
+dashboard/.next/
+dashboard/node_modules/
+
+# --- PyInstaller ---
+*.spec
+dist/
+
+# --- pytest / coverage ---
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- mypy ---
+.mypy_cache/

@@ -1,0 +1,7 @@
+# requirements-ml.txt — heavy ML dependencies (install separately on Colab / GPU machine)
+# CPU-only torch to keep image size manageable on the dev machine
+torch==2.3.0+cpu
+transformers==4.41.2
+faiss-cpu==1.8.0
+langchain==0.2.5
+langchain-groq==0.1.6
