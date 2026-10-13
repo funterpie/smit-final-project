@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FYP Idea Archive · Stress-Tested</title>
+<style>
+:root{--bg:#0b0f14;--panel:#141a22;--line:#263140;--text:#e7edf5;--muted:#93a1b3;--accent:#6cb8ff;--gold:#f5c542}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:40px 20px 24px;text-align:center;border-bottom:1px solid var(--line);background:radial-gradient(1200px 300px at 50% -80px,#1b2a3f,transparent)}
+h1{margin:0 0 6px;font-size:clamp(1.5rem,4vw,2.3rem);letter-spacing:-.02em}
+header p{margin:0;color:var(--muted)}
+main{max-width:1240px;margin:0 auto;padding:24px 16px 64px}
+h2{font-size:1.1rem;margin:28px 0 12px}
+.occupied{list-style:none;margin:0;padding:0;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.occupied li{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.name{font-weight:600}
+.badge{align-self:flex-start;font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#1b1400;background:var(--gold);padding:5px 8px;border-radius:6px}
+.controls{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 82%,transparent);padding:10px 0 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input,select,button{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+input{flex:1 1 220px;min-width:0}
+button{cursor:pointer}
+#chips{display:flex;flex-wrap:wrap;gap:6px;width:100%}
+#chips button{padding:3px 10px;font-size:13px;border-radius:999px;color:var(--muted)}
+#chips button.on{color:var(--text);border-color:var(--accent);background:#12304d}
+.count{color:var(--muted);font-size:13px;margin-left:auto}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.card[hidden]{display:none}
+.card[open]{border-color:#34506d}
+.card summary{list-style:none;cursor:pointer;padding:14px;display:grid;gap:8px}
+.card summary::-webkit-details-marker{display:none}
+.top{display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+.title{font-weight:600;line-height:1.35}
+.src{color:var(--muted);font-size:12px;white-space:nowrap}
+.rank{color:var(--accent);font-weight:700;margin-right:6px}
+.verdict{color:#c5d0de;font-size:13.5px}
+.verdict b{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;display:block}
+.chip{--c:#93a1b3;justify-self:start;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 55%,transparent);background:color-mix(in srgb,var(--c) 12%,transparent)}
+.t-backup{--c:#4ade80}.t-saturated{--c:#f59e0b}.t-data-risk{--c:#f87171}.t-compute{--c:#c084fc}.t-complexity{--c:#fb923c}.t-weak-eval{--c:#facc15}.t-ethics{--c:#f472b6}.t-infra{--c:#22d3ee}.t-overlap{--c:#60a5fa}.t-thin-ml{--c:#a3a3a3}
+.body{padding:2px 14px 14px;border-top:1px dashed var(--line);font-size:13.5px}
+.body dl{margin:0}
+.body dt{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-top:10px}
+.body dd{margin:2px 0 0}
+footer{color:var(--muted);text-align:center;font-size:12px;padding:0 16px 32px}
+</style>
+</head>
+<body>
+<header>
+  <h1>FYP Idea Archive</h1>
+  <p>180 ideas from 9 models, stress-tested against a 50-60 hour / 4-week capstone budget</p>
+</header>
+<main>
+  <section>
+    <h2>Claimed projects</h2>
+    <ul class="occupied">
+      <li><span class="name">TextileGuard</span><span class="badge">[Occupied by Muhammad Taha]</span></li>
+      <li><span class="name">GridGuard</span><span class="badge">[Occupied by Muhammad Taha]</span></li>
+      <li><span class="name">LogSense</span><span class="badge">[Occupied by Muhammad Taha]</span></li>
+      <li><span class="name">PR Risk Scorer (Risky-Commit Prediction)</span><span class="badge">[Occupied by Muhammad Taha]</span></li>
+      <li><span class="name">VoiceGrade</span><span class="badge">[Occupied by Muhammad Taha]</span></li>
+    </ul>
+  </section>
+  <section>
+    <h2>Runner-ups and rejected ideas</h2>
+    <div class="controls">
+      <input id="q" type="search" placeholder="Search title, pitch, tech, dataset, verdict…" aria-label="Search">
+      <select id="model" aria-label="Filter by model"><option value="">All models</option></select>
+      <button id="toggle" type="button">Expand all</button>
+      <span class="count" id="count"></span>
+      <div id="chips"></div>
+    </div>
+    <div class="grid" id="grid">
+<!--ARCHIVE_START-->
+<details class="card" data-model="Qwen" data-tag="Backup"><summary><div class="top"><span class="title"><span class="rank">#6</span>TurboTrend — Uncertainty-Calibrated RUL + Maintenance Scheduling</span><span class="src">Qwen #19</span></div><span class="chip t-backup">Backup</span><div class="verdict"><b>Stress Test Verdict</b>C-MAPSS is a benchmark cliché, but calibrated uncertainty plus a cost-optimal maintenance schedule is a genuine twist. First fallback.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>Predicts machinery remaining useful life from sensor streams and turns it into a cost-optimized maintenance calendar, not just a number.</dd><dt>Core tech</dt><dd>LSTM/1D-CNN/Transformer on multivariate sensor windows; deep ensembles or MC-dropout for intervals. Eval: RMSE, NASA scoring function, interval coverage, cost…</dd><dt>Dataset</dt><dd>NASA C-MAPSS turbofan degradation dataset (public).</dd></dl></div></details>
+<details class="card" data-model="Grok" data-tag="Weak eval"><summary><div class="top"><span class="title"><span class="rank">#7</span>Exam answer-pattern collusion detector (cheating rings, not plagiarism of essays)</span><span class="src">Grok #14</span></div><span class="chip t-weak-eval">Weak eval</span><div class="verdict"><b>Stress Test Verdict</b>Genuinely unusual and CPU-light, but evaluation is a simulation on synthetic answer sheets and outputs accuse students.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>Exam-board SaaS: given anonymized MCQ/OMR matrices, surface *seating-adjacent identical-error clusters* that look like copied rings.</dd><dt>Core tech</dt><dd>Item Response Theory (1–2PL) residuals + pairwise identical-wrong-answer scores; HDBSCAN on student vectors; compare vs raw Hamming-similarity threshold…</dd><dt>Dataset</dt><dd>Needs synthetic/self-collected data — generate 2,000–10,000 synthetic answer sheets with known planted clusters (standard in…</dd></dl></div></details>
+<details class="card" data-model="Qwen" data-tag="Saturated"><summary><div class="top"><span class="title"><span class="rank">#8</span>BotNetBuster — Explainable Intrusion Detection for Campus/SME LANs</span><span class="src">Qwen #13</span></div><span class="chip t-saturated">Saturated</span><div class="verdict"><b>Stress Test Verdict</b>NIDS is crowded and CIC datasets are multi-GB with documented labelling problems; the conformal/drift angle makes it a real cyber fallback.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>A deployable NIDS that detects intrusion/botnet/IoT-malware traffic on a local network and explains *why* each alert fired in plain language.</dd><dt>Core tech</dt><dd>1D-CNN or Transformer over flow statistics vs GBM baselines; conformal prediction sets. Eval: PR-AUC on rare classes, calibration curves, cross-dataset…</dd><dt>Dataset</dt><dd>CIC-IDS2017, UNSW-NB15, CICIoT2023 (all public).</dd></dl></div></details>
+<details class="card" data-model="Kimi" data-tag="Thin ML"><summary><div class="top"><span class="title"><span class="rank">#9</span>Campus Lost-and-Found Visual Matcher</span><span class="src">Kimi #20</span></div><span class="chip t-thin-ml">Thin ML</span><div class="verdict"><b>Stress Test Verdict</b>Best demo-per-hour, but zero-shot CLIP with a 50-100 item test set means thin ML and wide confidence intervals.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>Students upload a photo/description of a lost item or found item; CLIP embeddings + vector DB semantically match &quot;black AirPods case with a scratch&quot; to the found-object shelf.</dd><dt>Core tech</dt><dd>OpenCLIP image+text dual embeddings, cosine similarity via a vector database (pgvector/Qdrant), optional zero-shot attribute extraction; evaluate retrieval…</dd><dt>Dataset</dt><dd>Needs synthetic/self-collected data — demo items photographed on campus; evaluation set built the same way (100 items is a…</dd></dl></div></details>
+<details class="card" data-model="Qwen" data-tag="Saturated"><summary><div class="top"><span class="title"><span class="rank">#10</span>OERadar — Early Struggle Detection in Online Courses (Privacy-First)</span><span class="src">Qwen #9</span></div><span class="chip t-saturated">Saturated</span><div class="verdict"><b>Stress Test Verdict</b>OULAD is excellent data, but student-performance prediction is heavily done and clickstream prep takes time.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>A drop-in analytics layer for Moodle-style LMSs that predicts struggling/dropping students weeks in advance from clickstream, with per-student explanations for instructors.</dd><dt>Core tech</dt><dd>Transformer/LSTM over event sequences → student-state embeddings → GBM hybrid; SHAP attributions. Eval: AUC, F1, early-warning lead time (weeks before dropout)…</dd><dt>Dataset</dt><dd>Open University Learning Analytics Dataset (OULAD, free) and/or ASSISTments 2012.</dd></dl></div></details>
+<details class="card" data-model="ChatGPT" data-tag="Backup"><summary><div class="top"><span class="title"><span class="rank">#11</span>MathItemCalibrator</span><span class="src">ChatGPT #15</span></div><span class="chip t-backup">Backup</span><div class="verdict"><b>Stress Test Verdict</b>Sound teacher-facing idea, but the MathE table is small and mostly tabular, which caps model depth and comparisons.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>A teacher-facing SaaS that estimates how difficult a mathematics question is and identifies which topic/skill combinations cause the most mistakes.</dd><dt>Core tech</dt><dd>Item-response-theory features + gradient boosting or neural knowledge-tracing model; compare IRT/logistic regression vs neural network and report AUC, log-loss…</dd><dt>Dataset</dt><dd>MathE — Assessing Mathematics Learning in Higher Education, with 9,546 question-answer records and topic/difficulty metadata.</dd></dl></div></details>
+<details class="card" data-model="Claude" data-tag="Saturated"><summary><div class="top"><span class="title"><span class="rank">#12</span>Roman Urdu Hate-Speech Moderation API</span><span class="src">Claude #2</span></div><span class="chip t-saturated">Saturated</span><div class="verdict"><b>Stress Test Verdict</b>RUHSOLD is clean, real data, but Roman-Urdu abuse moderation is duplicated across lists: low risk, low distinctiveness.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>A content-moderation microservice that flags abusive/offensive Roman Urdu text for community platforms.</dd><dt>Core tech</dt><dd>Fine-tuned transformer (XLM-R) on coarse- and fine-grained labels, compared against BiLSTM+attention and classical SVM baselines.</dd><dt>Dataset</dt><dd>RUHSOLD — Roman Urdu Hate-Speech and Offensive Language Detection dataset (~10k annotated tweets, MIT license, on…</dd></dl></div></details>
+<details class="card" data-model="Grok" data-tag="Data risk"><summary><div class="top"><span class="title"><span class="rank">#13</span>Mandi vegetable price-shock early warning for sabzi vendors</span><span class="src">Grok #7</span></div><span class="chip t-data-risk">Data risk</span><div class="verdict"><b>Stress Test Verdict</b>Plausible forecasting project, but it rests on one Kaggle price table of unverified coverage; check it in week 1.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>A vendor/wholesaler dashboard: “onion in Lahore likely +25% within 7 days” with feature drivers (arrivals, season, lag prices, shocks).</dd><dt>Core tech</dt><dd>LightGBM + LSTM (or Temporal Fusion Transformer if time allows) on lags/seasonality; primary task = 7-day shock classification + quantile regression; compare…</dd><dt>Dataset</dt><dd>Kaggle “Crop Prices Dataset of Pakistan” (AMIS, city-level); optional Agmarknet India as transfer test.</dd></dl></div></details>
+<details class="card" data-model="ChatGPT" data-tag="Data risk"><summary><div class="top"><span class="title"><span class="rank">#14</span>TenderTwin</span><span class="src">ChatGPT #1</span></div><span class="chip t-data-risk">Data risk</span><div class="verdict"><b>Stress Test Verdict</b>TED notices are messy multilingual XML with no duplicate labels, so evaluation rests on planted duplicates and heavy parsing.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>An AI procurement workspace that detects duplicate, near-duplicate, and suspiciously overlapping tender scopes before analysts waste time reviewing them.</dd><dt>Core tech</dt><dd>Sentence-BERT embeddings + FAISS vector search + HDBSCAN clustering; compare against TF-IDF/cosine similarity baseline and report Precision@K / cluster purity.</dd><dt>Dataset</dt><dd>TED Open Data — EU public procurement notices are published for analysis and reuse.</dd></dl></div></details>
+<details class="card" data-model="Qwen" data-tag="Complexity"><summary><div class="top"><span class="title"><span class="rank">#15</span>WardWatch — Civic Complaint Routing, Dedup &amp; SLA Prediction</span><span class="src">Qwen #7</span></div><span class="chip t-complexity">Complexity</span><div class="verdict"><b>Stress Test Verdict</b>Three subsystems (routing, dedup, survival) in one project, and NYC 311 has no duplicate labels.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>A municipal complaint-intake layer that classifies, deduplicates, routes to the right department, and predicts resolution time per ticket.</dd><dt>Core tech</dt><dd>SetFit/sentence-BERT embeddings + prototype/kNN routing; dedup via blocking + cross-encoder reranking; discrete-time survival model (Cox/GBM). Eval: routing…</dd><dt>Dataset</dt><dd>NYC 311 Service Requests or Chicago 311 (public, millions of labeled rows).</dd></dl></div></details>
+<details class="card" data-model="Grok" data-tag="Weak eval"><summary><div class="top"><span class="title"><span class="rank">#16</span>South-Asian code-switch language ID router (English / Urdu / Roman-Urdu / Sindhi / Pashto / Punjabi)</span><span class="src">Grok #20</span></div><span class="chip t-weak-eval">Weak eval</span><div class="verdict"><b>Stress Test Verdict</b>Test data is synthetic code-switched text spliced from parallel clauses, so scores are circular.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>A pre-moderation SaaS API: tag each message *and each span* so the right downstream filter (hate, scam, search index) is invoked — not a chatbot.</dd><dt>Core tech</dt><dd>Token-level XLM-RoBERTa or DistilBERT classifier (BIO language tags) vs OpenLID/FastText baselines; mixed-script features; accuracy, span-F1, confusion between…</dd><dt>Dataset</dt><dd>FLORES-200 / WikiAnn for Sindhi, Pashto, Urdu, Punjabi; Roman-Urdu-Parl; GlotLID-style public crawls; synthetic code-switched…</dd></dl></div></details>
+<details class="card" data-model="Kimi" data-tag="Weak eval"><summary><div class="top"><span class="title"><span class="rank">#17</span>Bug-Severity Triage Bot</span><span class="src">Kimi #11</span></div><span class="chip t-weak-eval">Weak eval</span><div class="verdict"><b>Stress Test Verdict</b>Bug-severity labels are subjective and noisy, which caps what any model can show.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>Ingests incoming bug reports → routes severity and suggests assignee team, cutting triage meetings.</dd><dt>Core tech</dt><dd>Fine-tuned transformer multi-label classifier (severity) + a kNN/embedding retriever for duplicate detection; report macro-F1 and duplicate-retrieval hit@5.</dd><dt>Dataset</dt><dd>Public Mozilla/Eclipse bug-report datasets (long-standing, downloadable from MSR/promise repositories).</dd></dl></div></details>
+<details class="card" data-model="Qwen" data-tag="Saturated"><summary><div class="top"><span class="title"><span class="rank">#18</span>PIIShield — Personal Data Inventory for DPDP/GDPR Compliance</span><span class="src">Qwen #3</span></div><span class="chip t-saturated">Saturated</span><div class="verdict"><b>Stress Test Verdict</b>PII detection is well trodden (public Kaggle competition) and AI4Privacy is synthetic, so scores hit a ceiling.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>Scans documents, exports, and DB dumps to detect and classify PII, then auto-generates a compliance-ready data map of &quot;what personal data we hold, where.&quot;</dd><dt>Core tech</dt><dd>Fine-tuned RoBERTa/DeBERTa NER + rule/regex ensemble + embedding clustering for column-type inference. Eval: entity F1 per type vs Microsoft Presidio baseline…</dd><dt>Dataset</dt><dd>AI4Privacy (HuggingFace), Enron Email Corpus, TabPrivacy — all public.</dd></dl></div></details>
+<details class="card" data-model="ChatGPT" data-tag="Weak eval"><summary><div class="top"><span class="title"><span class="rank">#19</span>AlertCompress</span><span class="src">ChatGPT #18</span></div><span class="chip t-weak-eval">Weak eval</span><div class="verdict"><b>Stress Test Verdict</b>NIDS is crowded, and cluster purity against attack labels does not prove alert compression helps analysts.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>A cybersecurity analyst dashboard that groups hundreds of similar network alerts into a few meaningful incident clusters.</dd><dt>Core tech</dt><dd>Autoencoder or contrastive encoder for flow embeddings + HDBSCAN clustering; optionally classify cluster types with XGBoost; report clustering…</dd><dt>Dataset</dt><dd>CIC-IDS2017 or UNSW-NB15, both publicly available labeled network-flow datasets.</dd></dl></div></details>
+<details class="card" data-model="Kimi" data-tag="Saturated"><summary><div class="top"><span class="title"><span class="rank">#20</span>Student-Dropout Early-Warning Advisor Dashboard</span><span class="src">Kimi #19</span></div><span class="chip t-saturated">Saturated</span><div class="verdict"><b>Stress Test Verdict</b>Dropout prediction is a student staple; the fairness audit is nice but the base task is common.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>Flags students at risk of dropping out in the first two semesters with interpretable reasons (attendance, grades, demographics) for advisors.</dd><dt>Core tech</dt><dd>Tabular classification (XGBoost vs. logistic baseline) with SHAP explanations + demographic parity / equalized-odds audit.</dd><dt>Dataset</dt><dd>UCI &quot;Predict Students&#x27; Dropout and Academic Success&quot; (~4,400 students, real Portuguese higher-ed data, semester-level features).</dd></dl></div></details>
+<details class="card" data-model="ChatGPT" data-tag="Saturated"><summary><div class="top"><span class="title"><span class="rank">#21</span>RoadFix Prioritizer</span><span class="src">ChatGPT #7</span></div><span class="chip t-saturated">Saturated</span><div class="verdict"><b>Stress Test Verdict</b>RDD2022 road damage appears in four lists, and severity has no ground-truth labels, so severity MAE is unmeasurable.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>A road-image SaaS that detects road defects and converts them into a ranked maintenance-priority map.</dd><dt>Core tech</dt><dd>YOLOv8n/YOLO11n object detector + damage-area/severity regression; compare against classical image features or a smaller detector and report mAP…</dd><dt>Dataset</dt><dd>RDD2022, containing annotated road-damage imagery from six countries.</dd></dl></div></details>
+<details class="card" data-model="Grok" data-tag="Data risk"><summary><div class="top"><span class="title"><span class="rank">#22</span>Roman-Urdu financial scam SMS / WhatsApp classifier (JazzCash, EasyPaisa, fake NADRA, OTP-harvest)</span><span class="src">Grok #1</span></div><span class="chip t-data-risk">Data risk</span><div class="verdict"><b>Stress Test Verdict</b>Needs 800-1,500 self-labelled scam messages, and Roman-Urdu classification is the most duplicated theme here.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>A moderation SaaS that flags code-mixed financial scams in Roman Urdu, not generic English spam.</dd><dt>Core tech</dt><dd>Character-aware CNN or CANINE + fine-tuned XLM-RoBERTa sequence classifier; compare against FastText, BiLSTM, and a keyword/regex baseline; report macro-F1…</dd><dt>Dataset</dt><dd>UCI Roman-Urdu Sentiment (20k) + Harvard Dataverse Roman Urdu Sentiment Corpus (134k) for language prior; SMS Spam Collection…</dd></dl></div></details>
+<details class="card" data-model="ChatGPT" data-tag="Weak eval"><summary><div class="top"><span class="title"><span class="rank">#23</span>GarmentPulse</span><span class="src">ChatGPT #14</span></div><span class="chip t-weak-eval">Weak eval</span><div class="verdict"><b>Stress Test Verdict</b>Regionally sharp but only about 1,200 rows, too little for rigorous model comparison.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>An AI production dashboard that predicts manufacturing productivity and identifies the operational factors associated with poor-performing production periods.</dd><dt>Core tech</dt><dd>XGBoost/Random Forest regression + SHAP explanations; compare with linear regression and report R², MAE, RMSE and feature importance stability.</dd><dt>Dataset</dt><dd>UCI Productivity Prediction of Garment Employees, an industry-collected garment-production dataset.</dd></dl></div></details>
+<details class="card" data-model="Grok" data-tag="Saturated"><summary><div class="top"><span class="title"><span class="rank">#24</span>Feeder / city load-shape forecaster for SME generator &amp; solar sizing (including Ramadan effects)</span><span class="src">Grok #17</span></div><span class="chip t-saturated">Saturated</span><div class="verdict"><b>Stress Test Verdict</b>No Pakistani load data, so it runs on a PJM proxy; load forecasting appears in three lists.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>SME SaaS: forecast next-week load *shape* (not real-time dispatch) so shops can size UPS/solar and plan generator hours around predicted troughs.</dd><dt>Core tech</dt><dd>LightGBM and a seq2seq LSTM/TFT on lags + weather + weekday + Ramadan/Eid dummies; compare vs seasonal naive and SARIMAX; nRMSE, pinball, peak-hour MAPE.</dd><dt>Dataset</dt><dd>Kaggle PJM Hourly Energy Consumption or UCI Household Power as the trainable hourly series; ERA5 temperature; honest transfer…</dd></dl></div></details>
+<details class="card" data-model="Claude" data-tag="Saturated"><summary><div class="top"><span class="title"><span class="rank">#25</span>Karachi Air-Quality Forecast &amp; Alert Dashboard</span><span class="src">Claude #6</span></div><span class="chip t-saturated">Saturated</span><div class="verdict"><b>Stress Test Verdict</b>Regional AQ forecasting is duplicated four times, and sensor gaps make clean baselines harder than they look.</div></summary><div class="body"><dl><dt>Pitch</dt><dd>A dashboard forecasting next 24–48hr PM2.5 for Karachi with health-risk alerts.</dd><dt>Core tech</dt><dd>Compare classical (SARIMA/Prophet) vs. deep learning (LSTM or Temporal Fusion Transformer) forecasting, evaluated via MAE/RMSE, plus a threshold classifier for…</dd><dt>Dataset</dt><dd>OpenAQ API + Pakistan Air Quality Initiative historical sensor data for Karachi (confirmed public, actively maintained)…</dd></dl></div></details>
+<!--ARCHIVE_END-->
+    </div>
+  </section>
+</main>
+<footer>Verdicts are judgement calls against the stated constraints, not a statement about idea quality. Rank numbers (#6-#25) order the strongest fallbacks.</footer>
+<script>
+const $=s=>document.querySelector(s), cards=[...document.querySelectorAll('.card')];
+const q=$('#q'), model=$('#model'), chips=$('#chips'), count=$('#count'), toggle=$('#toggle');
+const text=new Map(cards.map(c=>[c,c.textContent.toLowerCase()]));
+let tag='';
+[...new Set(cards.map(c=>c.dataset.model))].forEach(m=>model.add(new Option(m,m)));
+const tags=[...new Set(cards.map(c=>c.dataset.tag))].sort();
+chips.innerHTML='<button class="on" data-t="">All</button>'+tags.map(t=>'<button data-t="'+t+'">'+t+'</button>').join('');
+function apply(){
+  const s=q.value.trim().toLowerCase(); let n=0;
+  cards.forEach(c=>{
+    const ok=(!s||text.get(c).includes(s))&&(!model.value||c.dataset.model===model.value)&&(!tag||c.dataset.tag===tag);
+    c.hidden=!ok; if(ok)n++;
+  });
+  count.textContent='Showing '+n+' of '+cards.length;
+}
+chips.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  tag=b.dataset.t; chips.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); apply();
+});
+q.addEventListener('input',apply); model.addEventListener('change',apply);
+toggle.addEventListener('click',()=>{
+  const open=toggle.textContent==='Expand all';
+  cards.forEach(c=>{if(!c.hidden)c.open=open}); toggle.textContent=open?'Collapse all':'Expand all';
+});
+apply();
+</script>
+</body>
+</html>

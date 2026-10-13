@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My five project ideas, in plain words</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F3F7; --paper:#FFFFFF; --ink:#16222E; --muted:#54657A; --line:#D3DBE4;
+  --head:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--body)}
+a{color:inherit}
+:focus-visible{outline:3px solid #16222E;outline-offset:3px;border-radius:4px}
+.wrap{max-width:860px;margin:0 auto;padding:0 20px}
+
+header{padding:56px 0 28px}
+h1{font:800 clamp(2rem,6vw,3.2rem)/1.08 var(--head);letter-spacing:-.02em;margin:0 0 14px}
+header p{margin:0;max-width:56ch;color:var(--muted);font-size:1.1rem}
+
+.glance{list-style:none;margin:28px 0 0;padding:0;border-top:1px solid var(--line)}
+.glance li{border-bottom:1px solid var(--line)}
+.glance a{display:grid;grid-template-columns:10px 150px 1fr;gap:14px;align-items:baseline;padding:12px 4px;text-decoration:none}
+.glance a:hover{background:#E6ECF2}
+.glance .dot{width:10px;height:10px;border-radius:50%;background:var(--c);align-self:center}
+.glance b{font:700 1.05rem var(--head)}
+.glance span:last-child{color:var(--muted)}
+@media (max-width:560px){.glance a{grid-template-columns:10px 1fr}.glance span:last-child{grid-column:2}}
+
+section.idea{margin-top:64px;padding-top:22px;border-top:6px solid var(--c)}
+section.idea h2{font:800 clamp(1.9rem,5vw,2.6rem)/1.1 var(--head);letter-spacing:-.02em;margin:0 0 10px;color:var(--c)}
+.lead{font-size:1.3rem;line-height:1.4;margin:0 0 24px;max-width:36ch;font-weight:700}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+.tags span{font-size:.9rem;padding:3px 12px;border-radius:999px;border:1.5px solid var(--c);color:var(--c);font-weight:700}
+
+.flow{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px}
+.flow figure{margin:0;text-align:center}
+.flow svg{width:100%;max-width:260px;height:auto;display:block;margin:0 auto 8px}
+.flow figcaption{font-size:.95rem;color:var(--muted);line-height:1.4}
+.arrow{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--c);font-size:.85rem;font-weight:700;text-align:center;max-width:96px;line-height:1.25}
+.arrow svg{width:56px;height:20px;margin:0}
+@media (max-width:640px){
+  .flow{grid-template-columns:1fr;gap:10px}
+  .arrow{max-width:none}
+  .arrow svg{transform:rotate(90deg);margin:10px 0}
+}
+
+dl{margin:26px 0 0;display:grid;grid-template-columns:170px 1fr;gap:0 24px}
+dt{font-weight:700;padding:12px 0;border-top:1px solid var(--line)}
+dd{margin:0;padding:12px 0;border-top:1px solid var(--line)}
+@media (max-width:640px){dl{grid-template-columns:1fr}dt{padding-bottom:0}dd{border-top:0;padding-top:2px}}
+
+.words{margin:72px 0 0;padding:26px;background:var(--paper);border:1px solid var(--line);border-radius:14px}
+.words h2{font:800 1.5rem var(--head);margin:0 0 12px}
+.words p{margin:0 0 8px}
+.pick{margin:72px 0 80px;padding-top:22px;border-top:6px solid var(--ink)}
+.pick h2{font:800 1.7rem var(--head);margin:0 0 10px}
+.pick p{margin:0 0 8px;max-width:60ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>My five project ideas, in plain words</h1>
+  <p>Each idea below says what it does, shows a small picture of what goes in and what comes out, and explains how you would prove it works.</p>
+  <ul class="glance">
+    <li><a href="#textileguard" style="--c:#3B4BC8"><span class="dot"></span><b>TextileGuard</b><span>Finds defects in fabric photos</span></a></li>
+    <li><a href="#turbotrend" style="--c:#B86E00"><span class="dot"></span><b>TurboTrend</b><span>Says when a machine will break</span></a></li>
+    <li><a href="#prrisk" style="--c:#1F8A5B"><span class="dot"></span><b>PR Risk Scorer</b><span>Warns when a code change is risky</span></a></li>
+    <li><a href="#voicegrade" style="--c:#C2306B"><span class="dot"></span><b>VoiceGrade</b><span>Tells you which English sounds to fix</span></a></li>
+    <li><a href="#gridguard" style="--c:#0E7C86"><span class="dot"></span><b>GridGuard</b><span>Finds electricity meters that look suspicious</span></a></li>
+  </ul>
+</header>
+
+<!-- TEXTILEGUARD -->
+<section class="idea" id="textileguard" style="--c:#3B4BC8">
+  <h2>TextileGuard</h2>
+  <p class="lead">You upload a photo of fabric. It shows you where the defects are.</p>
+  <div class="tags"><span>Build risk: medium</span><span>Best demo</span></div>
+
+  <div class="flow">
+    <figure>
+      <svg viewBox="0 0 200 120" role="img" aria-label="A piece of woven fabric with one small dark snag">
+        <defs><pattern id="weaveA" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#E6EAF7"/><path d="M0 4H8M4 0V8" stroke="#A9B4DA" stroke-width="1.3"/></pattern></defs>
+        <rect x="10" y="8" width="180" height="104" rx="6" fill="url(#weaveA)" stroke="#C5CDE8"/>
+        <ellipse cx="128" cy="62" rx="13" ry="6" fill="#4B557A" transform="rotate(-20 128 62)"/>
+        <path d="M118 70 C124 66 132 58 140 52" stroke="#4B557A" stroke-width="2" fill="none"/>
+      </svg>
+      <figcaption>A photo of fabric</figcaption>
+    </figure>
+    <div class="arrow" aria-hidden="true">
+      <span>compares it with normal fabric</span>
+      <svg viewBox="0 0 56 20"><line x1="2" y1="10" x2="44" y2="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><polygon points="42,2 55,10 42,18" fill="currentColor"/></svg>
+    </div>
+    <figure>
+      <svg viewBox="0 0 200 120" role="img" aria-label="The same fabric with a red glow and dashed box around the defect">
+        <defs>
+          <pattern id="weaveB" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#E6EAF7"/><path d="M0 4H8M4 0V8" stroke="#A9B4DA" stroke-width="1.3"/></pattern>
+          <radialGradient id="heatB"><stop offset="0" stop-color="#FF3B30" stop-opacity=".85"/><stop offset="1" stop-color="#FF3B30" stop-opacity="0"/></radialGradient>
+        </defs>
+        <rect x="10" y="8" width="180" height="104" rx="6" fill="url(#weaveB)" stroke="#C5CDE8"/>
+        <circle cx="128" cy="62" r="36" fill="url(#heatB)"/>
+        <ellipse cx="128" cy="62" rx="13" ry="6" fill="#4B557A" transform="rotate(-20 128 62)"/>
+        <rect x="104" y="42" width="48" height="40" fill="none" stroke="#E5362B" stroke-width="2" stroke-dasharray="5 4"/>
+      </svg>
+      <figcaption>The same photo, with the defect marked</figcaption>
+    </figure>
+  </div>
+
+  <dl>
+    <dt>How it works</dt>
+    <dd>The model looks at many photos of good fabric and learns what normal looks like. Anything that does not match normal gets highlighted. You do not need thousands of photos of broken fabric.</dd>
+    <dt>Real-life example</dt>
+    <dd>A worker at a small textile mill takes a photo of a cloth roll. The app draws a red glow on a snag the eye can easily miss.</dd>
+    <dt>Who uses it</dt>
+    <dd>Small textile factories that want automatic quality checks but cannot label thousands of defect images.</dd>
+    <dt>What you build</dt>
+    <dd>PatchCore and PaDiM models, plus a simple autoencoder to compare against. A web page where you upload an image and see the heat-map.</dd>
+    <dt>How you prove it works</dt>
+    <dd>How often it correctly calls an image good or bad (ROC-AUC), and how well the red area matches the real defect (pixel AUROC).</dd>
+    <dt>Watch out</dt>
+    <dd>The MVTec AD dataset has texture classes (carpet, leather, tile, and others) but no true fabric class. Say this clearly in the report. It is also for academic use only, not for selling.</dd>
+  </dl>
+</section>
+
+<!-- TURBOTREND -->
+<section class="idea" id="turbotrend" style="--c:#B86E00">
+  <h2>TurboTrend</h2>
+  <p class="lead">It reads a machine's sensors and tells you how long it has left and when to service it.</p>
+  <div class="tags"><span>Build risk: low</span><span>Cleanest report</span></div>
+
+  <div class="flow">
+    <figure>
+      <svg viewBox="0 0 200 120" role="img" aria-label="A sensor line slowly drifting downward toward a red failure line">
+        <line x1="14" y1="112" x2="190" y2="112" stroke="#B9C3CE"/>
+        <line x1="14" y1="90" x2="190" y2="90" stroke="#D64545" stroke-dasharray="4 4"/>
+        <polyline points="14,30 30,36 46,31 62,42 78,40 94,52 110,58" fill="none" stroke="#B86E00" stroke-width="2.5" stroke-linejoin="round"/>
+        <line x1="110" y1="14" x2="110" y2="112" stroke="#8898A8" stroke-dasharray="2 3"/>
+        <circle cx="110" cy="58" r="4" fill="#B86E00"/>
+      </svg>
+      <figcaption>Sensor readings up to today</figcaption>
+    </figure>
+    <div class="arrow" aria-hidden="true">
+      <span>predicts the future</span>
+      <svg viewBox="0 0 56 20"><line x1="2" y1="10" x2="44" y2="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><polygon points="42,2 55,10 42,18" fill="currentColor"/></svg>
+    </div>
+    <figure>
+      <svg viewBox="0 0 200 120" role="img" aria-label="The same line continued as a dotted forecast inside a widening shaded band, with a green service marker before the failure line">
+        <line x1="14" y1="112" x2="190" y2="112" stroke="#B9C3CE"/>
+        <line x1="14" y1="90" x2="190" y2="90" stroke="#D64545" stroke-dasharray="4 4"/>
+        <polygon points="110,58 140,68 170,82 190,91 190,111 170,98 140,80" fill="#B86E00" fill-opacity=".2"/>
+        <polyline points="14,30 30,36 46,31 62,42 78,40 94,52 110,58" fill="none" stroke="#B86E00" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M110 58 L190 101" stroke="#B86E00" stroke-width="2.5" stroke-dasharray="2 5" stroke-linecap="round" fill="none"/>
+        <line x1="140" y1="27" x2="140" y2="112" stroke="#1F8A5B" stroke-width="2" stroke-dasharray="4 3"/>
+        <circle cx="140" cy="20" r="8" fill="#1F8A5B"/>
+        <path d="M136 20 L139 23 L145 16" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <figcaption>Time left, a margin of error, and the best day to service</figcaption>
+    </figure>
+  </div>
+
+  <dl>
+    <dt>How it works</dt>
+    <dd>It learns from machines that were run until they broke. Then it looks at a new machine's sensors and guesses how many working cycles are left. It also says how sure it is, and picks the cheapest time to do maintenance.</dd>
+    <dt>Real-life example</dt>
+    <dd>"This engine has about 40 cycles left, give or take 8. Book service within 30 cycles."</dd>
+    <dt>Who uses it</dt>
+    <dd>Factory and maintenance teams who want to fix machines before they fail, but not too early.</dd>
+    <dt>What you build</dt>
+    <dd>An LSTM or 1D-CNN model that predicts remaining life, with a method that gives a range (deep ensembles or MC-dropout). A scheduler that compares repair costs. A dashboard.</dd>
+    <dt>How you prove it works</dt>
+    <dd>Prediction error (RMSE), the NASA score (which punishes late warnings more), how often the true value falls inside your range, and money saved by the schedule.</dd>
+    <dt>Watch out</dt>
+    <dd>The data is NASA's simulated jet engines, so there is no Pakistani angle. The strength here is the careful evaluation, not local relevance.</dd>
+  </dl>
+</section>
+
+<!-- PR RISK -->
+<section class="idea" id="prrisk" style="--c:#1F8A5B">
+  <h2>PR Risk Scorer</h2>
+  <p class="lead">It reads a code change and warns you: "risky, get a senior to check this."</p>
+  <div class="tags"><span>Build risk: medium</span><span>No overlap in the batch</span></div>
+
+  <div class="flow">
+    <figure>
+      <svg viewBox="0 0 200 120" role="img" aria-label="A list of changed lines of code, some added in green and one removed in red">
+        <rect x="10" y="8" width="180" height="104" rx="6" fill="#fff" stroke="#C9D3DC"/>
+        <rect x="20" y="20" width="8" height="8" rx="2" fill="#B9C3CE"/><rect x="34" y="20" width="90" height="8" rx="4" fill="#CBD5DE"/>
+        <rect x="20" y="35" width="8" height="8" rx="2" fill="#1F8A5B"/><rect x="34" y="35" width="110" height="8" rx="4" fill="#CBD5DE"/>
+        <rect x="20" y="50" width="8" height="8" rx="2" fill="#1F8A5B"/><rect x="34" y="50" width="70" height="8" rx="4" fill="#CBD5DE"/>
+        <rect x="20" y="65" width="8" height="8" rx="2" fill="#D64545"/><rect x="34" y="65" width="100" height="8" rx="4" fill="#CBD5DE"/>
+        <rect x="20" y="80" width="8" height="8" rx="2" fill="#1F8A5B"/><rect x="34" y="80" width="120" height="8" rx="4" fill="#CBD5DE"/>
+        <rect x="20" y="95" width="8" height="8" rx="2" fill="#B9C3CE"/><rect x="34" y="95" width="60" height="8" rx="4" fill="#CBD5DE"/>
+      </svg>
+      <figcaption>A pull request, which is a set of code changes</figcaption>
+    </figure>
+    <div class="arrow" aria-hidden="true">
+      <span>checks size, history and the code itself</span>
+      <svg viewBox="0 0 56 20"><line x1="2" y1="10" x2="44" y2="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><polygon points="42,2 55,10 42,18" fill="currentColor"/></svg>
+    </div>
+    <figure>
+      <svg viewBox="0 0 200 120" role="img" aria-label="The same code changes with two lines tinted red and a red badge that says 87 percent risky">
+        <rect x="10" y="8" width="180" height="78" rx="6" fill="#fff" stroke="#C9D3DC"/>
+        <rect x="14" y="25" width="172" height="12" fill="#FDE3E1"/>
+        <rect x="14" y="61" width="172" height="12" fill="#FDE3E1"/>
+        <rect x="20" y="16" width="8" height="8" rx="2" fill="#B9C3CE"/><rect x="34" y="16" width="90" height="8" rx="4" fill="#CBD5DE"/>
+        <rect x="20" y="28" width="8" height="8" rx="2" fill="#1F8A5B"/><rect x="34" y="28" width="110" height="8" rx="4" fill="#CBD5DE"/>
+        <rect x="20" y="40" width="8" height="8" rx="2" fill="#1F8A5B"/><rect x="34" y="40" width="70" height="8" rx="4" fill="#CBD5DE"/>
+        <rect x="20" y="52" width="8" height="8" rx="2" fill="#D64545"/><rect x="34" y="52" width="100" height="8" rx="4" fill="#CBD5DE"/>
+        <rect x="20" y="64" width="8" height="8" rx="2" fill="#1F8A5B"/><rect x="34" y="64" width="120" height="8" rx="4" fill="#CBD5DE"/>
+        <rect x="20" y="76" width="8" height="6" rx="2" fill="#B9C3CE"/>
+        <rect x="20" y="92" width="160" height="24" rx="12" fill="#C0392B"/>
+        <text x="100" y="108" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="system-ui,sans-serif">87% risky</text>
+      </svg>
+      <figcaption>A risk score, so seniors review the dangerous ones first</figcaption>
+    </figure>
+  </div>
+
+  <dl>
+    <dt>How it works</dt>
+    <dd>It learns from old code changes that later caused bugs. It looks at how big the change is, how many files it touches, and how the code itself reads. Then it gives a new change a risk score.</dd>
+    <dt>Real-life example</dt>
+    <dd>A junior developer changes the payment code in many files at once. The tool marks it high risk so a senior looks before it is merged.</dd>
+    <dt>Who uses it</dt>
+    <dd>Software teams with many junior developers, where seniors do not have time to read everything.</dd>
+    <dt>What you build</dt>
+    <dd>A simple logistic regression model as the baseline, and a CodeBERT model that reads the code. A web page where you paste a change and get a score.</dd>
+    <dt>How you prove it works</dt>
+    <dd>AUC, and one easy question: if seniors only review the riskiest 20 percent of changes, how many of the real bugs do they catch?</dd>
+    <dt>Data</dt>
+    <dd>ApacheJIT, a public set of Apache project commits labelled by whether they caused bugs.</dd>
+  </dl>
+</section>
+
+<!-- VOICEGRADE -->
+<section class="idea" id="voicegrade" style="--c:#C2306B">
+  <h2>VoiceGrade</h2>
+  <p class="lead">You say an English sentence. It shows which sounds you got wrong and how to fix them.</p>
+  <div class="tags"><span>Build risk: medium</span><span>Highest ceiling</span></div>
+
+  <div class="flow">
+    <figure>
+      <svg viewBox="0 0 200 120" role="img" aria-label="A sound wave of someone speaking">
+        <g fill="#C2306B">
+          <rect x="14" y="53" width="4" height="14" rx="2"/><rect x="22" y="45" width="4" height="30" rx="2"/><rect x="30" y="35" width="4" height="50" rx="2"/><rect x="38" y="47" width="4" height="26" rx="2"/>
+          <rect x="46" y="28" width="4" height="64" rx="2"/><rect x="54" y="40" width="4" height="40" rx="2"/><rect x="62" y="50" width="4" height="20" rx="2"/><rect x="70" y="32" width="4" height="56" rx="2"/>
+          <rect x="78" y="43" width="4" height="34" rx="2"/><rect x="86" y="51" width="4" height="18" rx="2"/><rect x="94" y="37" width="4" height="46" rx="2"/><rect x="102" y="30" width="4" height="60" rx="2"/>
+          <rect x="110" y="46" width="4" height="28" rx="2"/><rect x="118" y="52" width="4" height="16" rx="2"/><rect x="126" y="41" width="4" height="38" rx="2"/><rect x="134" y="34" width="4" height="52" rx="2"/>
+          <rect x="142" y="48" width="4" height="24" rx="2"/><rect x="150" y="54" width="4" height="12" rx="2"/><rect x="158" y="44" width="4" height="32" rx="2"/><rect x="166" y="38" width="4" height="44" rx="2"/>
+          <rect x="174" y="50" width="4" height="20" rx="2"/><rect x="182" y="55" width="4" height="10" rx="2"/>
+        </g>
+      </svg>
+      <figcaption>Your voice saying "weather"</figcaption>
+    </figure>
+    <div class="arrow" aria-hidden="true">
+      <span>splits it into sounds and scores each one</span>
+      <svg viewBox="0 0 56 20"><line x1="2" y1="10" x2="44" y2="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><polygon points="42,2 55,10 42,18" fill="currentColor"/></svg>
+    </div>
+    <figure>
+      <svg viewBox="0 0 200 120" role="img" aria-label="The word split into four sounds, three green and one red, with an overall score of 82 out of 100">
+        <g font-family="system-ui,sans-serif" font-size="16" font-weight="700" text-anchor="middle">
+          <rect x="14" y="30" width="38" height="36" rx="8" fill="#DDF3E8" stroke="#1F8A5B" stroke-width="2"/><text x="33" y="54" fill="#14663F">w</text>
+          <rect x="58" y="30" width="38" height="36" rx="8" fill="#DDF3E8" stroke="#1F8A5B" stroke-width="2"/><text x="77" y="54" fill="#14663F">e</text>
+          <rect x="102" y="30" width="38" height="36" rx="8" fill="#FBDADA" stroke="#D64545" stroke-width="2"/><text x="121" y="54" fill="#A82727">th</text>
+          <rect x="146" y="30" width="38" height="36" rx="8" fill="#DDF3E8" stroke="#1F8A5B" stroke-width="2"/><text x="165" y="54" fill="#14663F">er</text>
+          <circle cx="121" cy="16" r="9" fill="#D64545"/><text x="121" y="21" fill="#fff" font-size="13">!</text>
+        </g>
+        <rect x="14" y="84" width="170" height="10" rx="5" fill="#E6EBF0"/>
+        <rect x="14" y="84" width="139" height="10" rx="5" fill="#C2306B"/>
+        <text x="14" y="114" font-size="14" font-weight="700" fill="#16222E" font-family="system-ui,sans-serif">82 / 100</text>
+      </svg>
+      <figcaption>A score for every sound, and the one to fix</figcaption>
+    </figure>
+  </div>
+
+  <dl>
+    <dt>How it works</dt>
+    <dd>The model lines up your voice with the sounds it expected to hear. It then checks how close each sound is to correct speech, and turns that into scores like a teacher would give.</dd>
+    <dt>Real-life example</dt>
+    <dd>You say "weather". The app says the "th" sounded like a "d", and tells you to put your tongue between your teeth.</dd>
+    <dt>Who uses it</dt>
+    <dd>Job seekers preparing for interviews, and call-centre trainees. Human trainers cannot give this feedback to everyone.</dd>
+    <dt>What you build</dt>
+    <dd>A wav2vec2 model to align speech to sounds, a Goodness-of-Pronunciation score, and a small model that predicts expert scores. A web page where you record and see results.</dd>
+    <dt>How you prove it works</dt>
+    <dd>How closely your scores match the scores human experts gave (Pearson and Spearman correlation), and how well it spots wrong sounds (phoneme-level AUC).</dd>
+    <dt>Data</dt>
+    <dd>speechocean762, a free set of 5,000 English sentences from non-native speakers, each with expert pronunciation scores.</dd>
+    <dt>Watch out</dt>
+    <dd>The alignment tools can be fiddly to set up. Test them in week 1.</dd>
+  </dl>
+</section>
+
+<!-- GRIDGUARD -->
+<section class="idea" id="gridguard" style="--c:#0E7C86">
+  <h2>GridGuard</h2>
+  <p class="lead">It looks at home electricity use and lists which meters look suspicious, so inspectors visit those first.</p>
+  <div class="tags"><span>Build risk: medium</span><span>Honest about fake labels</span></div>
+
+  <div class="flow">
+    <figure>
+      <svg viewBox="0 0 200 120" role="img" aria-label="Bars showing steady monthly electricity use that suddenly drops in the last four months">
+        <line x1="10" y1="104" x2="192" y2="104" stroke="#B9C3CE"/>
+        <g fill="#0E7C86">
+          <rect x="14" y="44" width="10" height="60" rx="2"/><rect x="29" y="40" width="10" height="64" rx="2"/><rect x="44" y="46" width="10" height="58" rx="2"/><rect x="59" y="42" width="10" height="62" rx="2"/>
+          <rect x="74" y="38" width="10" height="66" rx="2"/><rect x="89" y="44" width="10" height="60" rx="2"/><rect x="104" y="41" width="10" height="63" rx="2"/><rect x="119" y="43" width="10" height="61" rx="2"/>
+        </g>
+        <g fill="#D64545">
+          <rect x="134" y="76" width="10" height="28" rx="2"/><rect x="149" y="80" width="10" height="24" rx="2"/><rect x="164" y="74" width="10" height="30" rx="2"/><rect x="179" y="78" width="10" height="26" rx="2"/>
+        </g>
+      </svg>
+      <figcaption>Monthly electricity use of one meter</figcaption>
+    </figure>
+    <div class="arrow" aria-hidden="true">
+      <span>learns normal use, flags strange use</span>
+      <svg viewBox="0 0 56 20"><line x1="2" y1="10" x2="44" y2="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><polygon points="42,2 55,10 42,18" fill="currentColor"/></svg>
+    </div>
+    <figure>
+      <svg viewBox="0 0 200 120" role="img" aria-label="A ranked list of three meters, with the most suspicious one at the top marked check first">
+        <g font-family="system-ui,sans-serif" font-size="12" fill="#16222E">
+          <text x="12" y="34">Meter 14</text><rect x="76" y="22" width="112" height="18" rx="4" fill="#D64545"/><text x="84" y="35" fill="#fff" font-weight="700">check first</text>
+          <text x="12" y="66">Meter 03</text><rect x="76" y="54" width="70" height="18" rx="4" fill="#86C3C8"/>
+          <text x="12" y="98">Meter 21</text><rect x="76" y="86" width="36" height="18" rx="4" fill="#B7DADD"/>
+        </g>
+      </svg>
+      <figcaption>A ranked list for the inspection crew</figcaption>
+    </figure>
+  </div>
+
+  <dl>
+    <dt>How it works</dt>
+    <dd>The model learns what normal electricity use looks like. When a meter's use does not match the normal pattern, it gets a high suspicion score. The meters are then sorted from most to least suspicious.</dd>
+    <dt>Real-life example</dt>
+    <dd>One house's use suddenly falls by more than half while the neighbours' use stays the same. That meter moves to the top of the list.</dd>
+    <dt>Who uses it</dt>
+    <dd>Electricity distribution companies that lose money to theft and only inspect meters at random today.</dd>
+    <dt>What you build</dt>
+    <dd>An autoencoder that learns normal use, plus a gradient boosting model, and a ranking page for inspectors.</dd>
+    <dt>How you prove it works</dt>
+    <dd>The main question is: if a crew can visit only 100 houses, how many of them really had a problem (precision at k)? You also report PR-AUC.</dd>
+    <dt>Watch out</dt>
+    <dd>No public data has real theft labels, so you add fake theft cases yourself and say so in the report. Also, the UCI household dataset is only one house, so use a multi-home dataset such as Pecan Street or build simulated homes.</dd>
+  </dl>
+</section>
+
+<div class="words">
+  <h2>Words you will see</h2>
+  <p><b>Anomaly:</b> something that does not look normal.</p>
+  <p><b>Model:</b> the program that learns from data and makes predictions.</p>
+  <p><b>Baseline:</b> a simple model you compare your model against, to show yours is better.</p>
+  <p><b>Dataset:</b> the collection of examples the model learns from.</p>
+</div>
+
+<div class="pick">
+  <h2>If you can only pick one</h2>
+  <p>Pick <b>TextileGuard</b> if you want a demo people understand in five seconds and a strong local story.</p>
+  <p>Pick <b>TurboTrend</b> if you want the safest build and the cleanest evaluation for the report.</p>
+</div>
+
+</div>
+</body>
+</html>

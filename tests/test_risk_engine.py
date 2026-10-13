@@ -85,8 +85,10 @@ class TestScoreCap:
                 dispersion=5.0,
             )
         )
-        # All 5 signals triggered → 25+30+20+15+10 = 100
-        assert len(report.triggered_signals()) == 5
+        # 5 heuristic signals triggered → 25+30+20+15+10 = 100 (capped from possible 120 with ML)
+        # ml_model_flag not triggered here (no ML prob supplied)
+        heuristic_triggered = [s for s in report.triggered_signals() if s.name != "ml_model_flag"]
+        assert len(heuristic_triggered) == 5
         assert report.score == 100
 
 

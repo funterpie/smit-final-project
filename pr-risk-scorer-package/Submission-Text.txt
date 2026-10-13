@@ -1,0 +1,8 @@
+PROJECT TITLE
+PR Risk Scorer — Score, Explain, Recommend for Pull Requests
+
+PROJECT DESCRIPTION
+PR Risk Scorer is an AI-powered code review assistant that scores every pull request for defect risk before it merges. It combines a fine-tuned CodeBERT model with handcrafted commit features (diff size, files touched, author's bug history) into a transparent, weighted risk score — never a bare 0/1 label. A RAG layer retrieves similar past bug-inducing commits from the ApacheJIT dataset as evidence, and an LLM turns the score and evidence into a plain-English explanation with a concrete suggestion (e.g. "add a test for the new auth branch"). A reviewer dashboard lets a human Approve, Request Changes, or Escalate — every decision is logged to a local audit trail. The tool runs entirely offline as a cross-platform CLI and git hook (Windows/macOS/Linux), so no code ever leaves the developer's machine.
+
+TECHNOLOGIES / TOOLS
+Python, PyDriller/GitPython, Scikit-learn, CodeBERT (HuggingFace Transformers), FAISS/ChromaDB (RAG), LangChain, Groq API (LLM), SQLite, React + TypeScript + Vite + Tailwind CSS (dashboard), FastAPI, PyInstaller + GitHub Actions (cross-platform packaging), ApacheJIT dataset

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PR Risk Scorer — Product Requirements Document</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F5F1; --ink:#1B1F23; --muted:#5B6570; --line:#D8DBD3;
+  --accent:#0F6E5C; --accent-soft:#E3EFEA;
+  --serif:"Source Serif 4",Georgia,serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#15181A; --ink:#EAEBE6; --muted:#9AA3A8; --line:#2E3336; --accent:#4FBE9E; --accent-soft:#1B2A26;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#15181A; --ink:#EAEBE6; --muted:#9AA3A8; --line:#2E3336; --accent:#4FBE9E; --accent-soft:#1B2A26;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.65 var(--sans);
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.page{max-width:720px;margin:0 auto;padding:0 22px 90px}
+
+header{padding:64px 0 30px;border-bottom:1px solid var(--line)}
+.kicker{font:600 .8rem var(--mono);letter-spacing:.02em;color:var(--accent);margin:0 0 10px}
+h1{font:700 clamp(1.9rem,5vw,2.6rem)/1.15 var(--serif);margin:0 0 16px;max-width:22ch}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:.9rem;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+
+nav.toc{margin:34px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:8px;background:var(--accent-soft)}
+nav.toc p{margin:0 0 8px;font:600 .78rem var(--mono);letter-spacing:.02em;color:var(--accent)}
+nav.toc ol{margin:0;padding-left:1.2em;columns:2;column-gap:24px;font-size:.92rem}
+nav.toc li{margin-bottom:4px;break-inside:avoid}
+nav.toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent}
+nav.toc a:hover{border-color:var(--accent)}
+@media(max-width:520px){nav.toc ol{columns:1}}
+
+section{padding:46px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:none}
+.num{font:600 .78rem var(--mono);color:var(--accent);letter-spacing:.02em;display:block;margin-bottom:6px}
+h2{font:700 1.5rem/1.25 var(--serif);margin:0 0 16px}
+h3{font:600 1.05rem var(--sans);margin:24px 0 8px}
+p{margin:0 0 14px;max-width:66ch}
+ul,ol.plain{margin:0 0 14px;padding-left:1.3em}
+li{margin-bottom:6px}
+strong{font-weight:600}
+.muted{color:var(--muted)}
+
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:.92rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 .78rem var(--mono);color:var(--muted);letter-spacing:.02em;text-transform:none}
+td code, p code{font:500 .85em var(--mono);background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+
+.callout{border-left:3px solid var(--accent);padding:2px 0 2px 16px;margin:18px 0;color:var(--muted);font-size:.94rem}
+.callout b{color:var(--ink)}
+
+.flowline{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:20px 0;font:500 .88rem var(--sans)}
+.flowline span.step{background:var(--accent-soft);border:1px solid var(--line);padding:7px 12px;border-radius:20px;white-space:nowrap}
+.flowline span.arrow{color:var(--muted)}
+
+.risk-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+@media(max-width:560px){.risk-grid{grid-template-columns:1fr}}
+.risk{border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.risk .label{font:600 .78rem var(--mono);color:var(--accent);display:block;margin-bottom:6px}
+
+footer{padding:40px 0;color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <p class="kicker">Product Requirements Document</p>
+  <h1>PR Risk Scorer<br>Score, Explain, Recommend — Not Just a Label</h1>
+  <div class="meta">
+    <span><b>Status:</b> Draft — pre-build</span>
+    <span><b>Type:</b> Final Year Project, SMIT Batch 10</span>
+    <span><b>Timeline:</b> 4 weeks</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Table of contents">
+  <p>Contents</p>
+  <ol>
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#goals">Goals &amp; non-goals</a></li>
+    <li><a href="#users">Users</a></li>
+    <li><a href="#howitworks">How it works</a></li>
+    <li><a href="#explain">Explain &amp; recommend layer</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#data">Training data</a></li>
+    <li><a href="#stack">Tech stack</a></li>
+    <li><a href="#packaging">Cross-platform packaging</a></li>
+    <li><a href="#eval">Evaluation</a></li>
+    <li><a href="#timeline">Timeline</a></li>
+    <li><a href="#risks">Risks</a></li>
+    <li><a href="#success">Success criteria</a></li>
+  </ol>
+</nav>
+
+<section id="problem">
+  <span class="num">01</span>
+  <h2>Problem</h2>
+  <p>When a developer opens a pull request, nobody knows how risky the change is until someone reads every line. On a small team, senior developers can't review everything in depth, so risky changes slip through and junior developers' PRs get either rubber-stamped or over-scrutinized at random.</p>
+  <p>This is a well-studied research problem called <strong>just-in-time (JIT) software defect prediction</strong>: predicting, at commit time, whether a code change will later be linked to a bug — before it ships, not after.</p>
+  <p>A model that only outputs <code>1</code> or <code>0</code> is not enough on its own. Reviewers don't trust a number with no reason behind it, and it gives them nothing to act on. So this system is built to <strong>score, explain, and recommend</strong> — never just label.</p>
+  <div class="callout">There is no project like this anywhere in the current Batch-10 sheet. The closest entries score network traffic or SOC logs, not source-code diffs.</div>
+</section>
+
+<section id="goals">
+  <span class="num">02</span>
+  <h2>Goals &amp; non-goals</h2>
+  <h3>Goals</h3>
+  <ul>
+    <li>Given a code change (a diff or a Git commit range), output a risk score between 0 and 1.</li>
+    <li>Run entirely on the developer's own machine — no code leaves the laptop.</li>
+    <li>Work the same way on Windows, macOS and Linux.</li>
+    <li>Beat a simple handcrafted-feature baseline with a code-aware model, and prove it with numbers.</li>
+    <li>Never just output a bare risk number — always pair it with a plain-English reason, supporting evidence, and a concrete suggestion.</li>
+    <li>Keep a human in control: the tool recommends, a person decides. Every decision is logged.</li>
+  </ul>
+  <h3>Non-goals</h3>
+  <ul>
+    <li>Not a full CI/CD platform — it scores changes, it doesn't block merges by itself.</li>
+    <li>Not trying to find the exact bug or line — only a risk score at the commit level.</li>
+    <li>Not built for closed-source enterprise codebases with private conventions; trained and evaluated on public open-source data.</li>
+  </ul>
+</section>
+
+<section id="users">
+  <span class="num">03</span>
+  <h2>Users</h2>
+  <table>
+    <tr><th>Who</th><th>What they need</th></tr>
+    <tr><td>Senior developer / reviewer</td><td>A ranked list so they review the riskiest PRs first, not in submission order.</td></tr>
+    <tr><td>Junior / intermediate developer</td><td>A warning before pushing, so they double-check their own change.</td></tr>
+    <tr><td>Small team with no dedicated QA</td><td>A safety net that doesn't require hiring anyone or setting up a heavy CI pipeline.</td></tr>
+  </table>
+</section>
+
+<section id="howitworks">
+  <span class="num">04</span>
+  <h2>How it works</h2>
+  <div class="flowline" role="img" aria-label="Flow: git commit or PR diff, then feature extraction, then two models, then a weighted risk engine, then RAG retrieval and an LLM explanation, then a reviewer dashboard, then a human decision, then an audit log">
+    <span class="step">git commit / PR diff</span><span class="arrow">→</span>
+    <span class="step">feature extraction</span><span class="arrow">→</span>
+    <span class="step">baseline model + CodeBERT</span><span class="arrow">→</span>
+    <span class="step">weighted risk engine</span><span class="arrow">→</span>
+    <span class="step">RAG evidence + LLM explanation</span><span class="arrow">→</span>
+    <span class="step">reviewer dashboard</span><span class="arrow">→</span>
+    <span class="step">human decision</span><span class="arrow">→</span>
+    <span class="step">audit log</span>
+  </div>
+  <p><strong>Feature extraction</strong> pulls handcrafted signals from the diff and its history: lines added and removed, number of files touched, how scattered the change is, the author's past bug rate, and time since their last commit.</p>
+  <p><strong>Two models score every change.</strong> A logistic regression / random forest baseline runs on the handcrafted features. A fine-tuned CodeBERT model reads the actual code text. The two scores feed a weighted risk engine (see below) so the report can show the code-aware model earns its extra complexity over the simple baseline.</p>
+</section>
+
+<section id="explain">
+  <span class="num">04b</span>
+  <h2>Explain &amp; recommend layer</h2>
+  <p>This is what turns the classifier into a system a reviewer actually trusts and uses — the same shape as CyberShield's SOC platform, pointed at code instead of network traffic.</p>
+
+  <h3>1. Transparent, weighted risk engine</h3>
+  <p>Instead of one opaque probability, the score is broken into named, weighted signals a reviewer can see at a glance:</p>
+  <table>
+    <tr><th>Signal</th><th>Example weight</th></tr>
+    <tr><td>Large diff, many files touched</td><td>+25</td></tr>
+    <tr><td>Touches authentication / payment / core logic</td><td>+30</td></tr>
+    <tr><td>Author's historical bug-inducing rate above average</td><td>+20</td></tr>
+    <tr><td>No tests added alongside the change</td><td>+15</td></tr>
+    <tr><td>CodeBERT semantic score (learned, not handcrafted)</td><td>blended in</td></tr>
+  </table>
+
+  <h3>2. RAG evidence retrieval</h3>
+  <p>The system embeds the new diff (using a code-aware embedding model, not a generic text encoder) and searches a curated subset of ApacheJIT's bug-inducing commits — a few thousand, not the full 100k+, to keep the index small enough to bundle and fast enough to demo. A similarity threshold guards against false matches: below it, the system reports plainly that no closely matching historical pattern was found, rather than forcing a match. It surfaces the top matches as concrete evidence — <em>"this change resembles commit X, which introduced bug Y"</em> — the same evidence-citing pattern CyberShield uses with MITRE ATT&amp;CK and CVE data. The index is pre-built once and shipped with the binary, not rebuilt at runtime.</p>
+
+  <h3>3. LLM explanation, never a verdict</h3>
+  <p>The classifier already decided the score — the LLM's only job is to turn the score, the weighted signals, and the retrieved evidence into two or three plain-English sentences and one concrete suggestion, e.g. <em>"This touches the auth module with no new tests and resembles a past commit that broke login — consider adding a test for the new branch before merging."</em> Runs on Groq's free tier, same as several approved projects on the sheet.</p>
+
+  <h3>4. Human-in-the-loop + audit log</h3>
+  <p>The tool never blocks a merge by itself. A reviewer sees the score, the explanation, and the evidence, then clicks <strong>Approve</strong>, <strong>Request Changes</strong>, or <strong>Escalate to senior</strong>. Every decision — score, explanation shown, and the human's choice — is written to a local SQLite audit log with a timestamp.</p>
+  <p class="muted">Precision note: scoring and evidence retrieval run fully offline. Only the final explanation sentence calls a cloud LLM (Groq free tier) — and only the risk signals and evidence are sent, never the raw source diff. If that call fails or there's no internet, the score, signal breakdown, and evidence still display; the tool just skips the plain-English sentence rather than failing.</p>
+</section>
+
+<section id="features">
+  <span class="num">05</span>
+  <h2>Features</h2>
+  <ol class="plain">
+    <li><strong>Score a single diff or commit range</strong> — <code>prscore review HEAD~1</code> prints a risk score, the weighted signals behind it, and the LLM's plain-English explanation.</li>
+    <li><strong>Git pre-commit / pre-push hook</strong> — runs automatically and warns before a risky change goes out.</li>
+    <li><strong>Reviewer dashboard (React + TypeScript)</strong> — shows score, evidence, explanation, and Approve / Request Changes / Escalate buttons per open PR — this is the demo centerpiece, not an afterthought.</li>
+    <li><strong>RAG evidence lookup</strong> — retrieves and displays the most similar past bug-inducing commits for a given diff.</li>
+    <li><strong>Batch scan of a repo's history</strong> — for the report's evaluation section, and to demo the tool "learning" from a real project.</li>
+    <li><strong>Local audit log (SQLite)</strong> — every score, explanation, and human decision is stored with a timestamp.</li>
+  </ol>
+</section>
+
+<section id="data">
+  <span class="num">06</span>
+  <h2>Training data</h2>
+  <p><strong>ApacheJIT</strong> — a public dataset built specifically for just-in-time defect prediction, with over 100,000 labelled commits from major Apache open-source projects. Each commit is already labelled as defect-inducing or clean, using the standard SZZ-algorithm methodology researchers use for this exact task.</p>
+  <p>This is the one thing that turns this project from "another classifier" into a serious FYP: real, labelled, peer-reviewed-methodology data, not something scraped and self-labelled in a week.</p>
+</section>
+
+<section id="stack">
+  <span class="num">07</span>
+  <h2>Tech stack</h2>
+  <table>
+    <tr><th>Layer</th><th>Tool</th></tr>
+    <tr><td>Diff / commit parsing</td><td><code>pydriller</code> or <code>GitPython</code></td></tr>
+    <tr><td>Handcrafted features</td><td>Python (pandas, numpy)</td></tr>
+    <tr><td>Baseline model</td><td>scikit-learn — logistic regression, random forest</td></tr>
+    <tr><td>Code-aware model</td><td><code>microsoft/codebert-base</code> via HuggingFace <code>transformers</code></td></tr>
+    <tr><td>Evidence retrieval (RAG)</td><td>FAISS (primary — simpler packaging) or ChromaDB (version-pinned), over CodeBERT-embedded bug-inducing commits only, with a similarity threshold</td></tr>
+    <tr><td>Explanation LLM</td><td>Groq free-tier API (Llama 3.x) via LangChain</td></tr>
+    <tr><td>CLI</td><td><code>typer</code> or <code>click</code></td></tr>
+    <tr><td>Audit log</td><td>SQLite</td></tr>
+    <tr><td>Reviewer dashboard</td><td>React + TypeScript + Vite + Tailwind CSS</td></tr>
+    <tr><td>Packaging</td><td>PyInstaller / Nuitka + GitHub Actions build matrix</td></tr>
+  </table>
+</section>
+
+<section id="packaging">
+  <span class="num">08</span>
+  <h2>Cross-platform packaging</h2>
+  <p>The engine is plain Python, so it doesn't need three separate codebases — it needs three separate <em>builds</em>. PyInstaller (or Nuitka) bundles the Python engine plus the model weights into one native binary per operating system.</p>
+  <p>GitHub Actions can build all three automatically: a workflow matrix of <code>windows-latest</code>, <code>macos-latest</code> and <code>ubuntu-latest</code> runners each run PyInstaller and upload the binary for that OS. No cross-compiling by hand.</p>
+  <p>For the FYP demo, the CLI plus a git hook is the strongest "runs locally, works everywhere" story — it's a real developer workflow, not just a web form. A GUI shell (e.g. Tauri, wrapping the same engine) is a stretch goal only if the core scoring and evaluation are already solid.</p>
+</section>
+
+<section id="eval">
+  <span class="num">09</span>
+  <h2>Evaluation</h2>
+  <ul>
+    <li><strong>AUC-PR</strong> (precision-recall, not plain accuracy — defect labels are imbalanced, so accuracy alone would be misleading).</li>
+    <li><strong>Recall at k</strong> — the metric that sells this to a non-ML examiner: "if reviewers only check the riskiest 20% of commits by our score, what fraction of all real bugs would they still catch?"</li>
+    <li><strong>Baseline vs. CodeBERT comparison</strong> — showing the code-aware model beats the handcrafted-feature baseline, to prove the extra complexity is earned.</li>
+    <li><strong>False-positive rate</strong> — a tool that flags everything as risky gets ignored by real teams; this number keeps the tool honest.</li>
+    <li><strong>Explanation quality (qualitative)</strong> — a small human-rated sample checking whether the LLM's explanation actually matches the weighted signals and retrieved evidence, so the report can show the explanation layer isn't hallucinating.</li>
+  </ul>
+</section>
+
+<section id="timeline">
+  <span class="num">10</span>
+  <h2>Timeline — 4 weeks</h2>
+  <table>
+    <tr><th>Week</th><th>Focus</th></tr>
+    <tr><td>1</td><td>Load ApacheJIT, build feature extraction pipeline, train baseline model, get a first AUC-PR number.</td></tr>
+    <tr><td>2</td><td>Fine-tune CodeBERT, build the weighted risk engine, wire up RAG evidence retrieval over ApacheJIT embeddings.</td></tr>
+    <tr><td>3</td><td>Add the LLM explanation layer, build the React + TypeScript reviewer dashboard with Approve/Escalate actions and the SQLite audit log; package the CLI with PyInstaller on all three OSes via GitHub Actions.</td></tr>
+    <tr><td>4</td><td>Run full evaluation including explanation-quality checks, write the report, polish the demo.</td></tr>
+  </table>
+</section>
+
+<section id="risks">
+  <span class="num">11</span>
+  <h2>Risks</h2>
+  <div class="risk-grid">
+    <div class="risk"><span class="label">Model risk</span>CodeBERT fine-tuning can be noisy on imbalanced defect labels, and free Colab sessions can disconnect mid-run.<br><span class="muted">Mitigation: class weighting, checkpoint to Google Drive every epoch, train on a curated subset rather than the full dataset, and always keep the simple baseline as a fallback that still works.</span></div>
+    <div class="risk"><span class="label">Packaging risk</span>PyInstaller builds sometimes miss hidden imports or ship huge binaries — and with only an Ubuntu dev machine, Windows/macOS builds can't be manually tested.<br><span class="muted">Mitigation: test the Linux build locally in week 3; for Windows/macOS, add a smoke-test step inside the GitHub Actions job itself that runs the built binary on the runner, so a passing CI run is real proof it works.</span></div>
+    <div class="risk"><span class="label">Data risk</span>ApacheJIT is Java-heavy open-source code, not necessarily like a student's own codebase.<br><span class="muted">Mitigation: state this limitation plainly in the report; optionally test on a second small labelled repo.</span></div>
+    <div class="risk"><span class="label">Scope risk</span>The explain/RAG/dashboard layer adds real work on top of the core classifier.<br><span class="muted">Mitigation: core score + baseline comparison is the non-negotiable deliverable; RAG evidence and the LLM explanation are built next, dashboard last — cut from the bottom if time runs short.</span></div>
+    <div class="risk"><span class="label">Explanation risk</span>The LLM could produce an explanation that doesn't match the actual signals (hallucination).<br><span class="muted">Mitigation: the LLM only rephrases signals and evidence it's given — it never sees the raw diff alone or invents a score — and a small human-rated sample checks this in evaluation.</span></div>
+    <div class="risk"><span class="label">RAG scale risk</span>Embedding all 100k+ ApacheJIT commits is too slow and too large for a laptop demo.<br><span class="muted">Mitigation: embed only a curated subset of bug-inducing commits (a few thousand, from 1–2 projects), not the full dataset.</span></div>
+    <div class="risk"><span class="label">False-match risk</span>Vector search always returns a "closest" result, even when nothing is truly similar.<br><span class="muted">Mitigation: set a similarity threshold — below it, show "no closely matching historical pattern found" instead of a forced match.</span></div>
+    <div class="risk"><span class="label">Embedding-model risk</span>A generic text-embedding model doesn't understand code syntax well, producing weak matches.<br><span class="muted">Mitigation: use a code-aware embedding model (CodeBERT embeddings or a code-tuned embedding model), not a general sentence encoder.</span></div>
+    <div class="risk"><span class="label">Vector-DB packaging risk</span>ChromaDB's local persistence has had cross-OS/version compatibility issues once bundled into a PyInstaller binary.<br><span class="muted">Mitigation: pin the exact ChromaDB version and test read/write on all three OSes in week 3; keep FAISS (a simpler flat file) as a drop-in backup.</span></div>
+    <div class="risk"><span class="label">Cold-start risk</span>Rebuilding the vector index at runtime bloats install size and slows first launch.<br><span class="muted">Mitigation: pre-build the index once and ship it bundled with the binary.</span></div>
+    <div class="risk"><span class="label">Offline-claim risk</span>The LLM explanation step calls a cloud API, which contradicts an "everything is offline" pitch.<br><span class="muted">Mitigation: be precise — scoring and retrieval are fully local; only the explanation sentence uses a cloud LLM. Add a local fallback: if the API call fails, still show the score, signals, and evidence without the LLM sentence.</span></div>
+  </div>
+  <div class="callout"><b>If RAG genuinely doesn't fit the timeline:</b> it's the one layer safe to cut. The weighted risk score, the signal breakdown, and human approve/escalate still stand on their own as a real, explainable system — RAG evidence and the LLM sentence are additive, not load-bearing. Core classifier first, everything above this line is add as time allows, in this order: weighted signals → LLM explanation → RAG evidence → dashboard.</div>
+</section>
+
+<section id="success">
+  <span class="num">12</span>
+  <h2>Success criteria</h2>
+  <ul>
+    <li>The CodeBERT model shows a measurable AUC-PR improvement over the handcrafted-feature baseline.</li>
+    <li>Recall-at-20% is reported and clearly explained to a non-technical examiner.</li>
+    <li>Every risk score comes with a weighted signal breakdown, retrieved evidence, and a plain-English explanation — never a bare number.</li>
+    <li>The reviewer dashboard lets a human approve, request changes, or escalate, and every decision is logged.</li>
+    <li>The CLI and git hook run correctly on at least two of the three target operating systems, with build artifacts for all three.</li>
+    <li>The report states data source, methodology, and limitations plainly — no unverified accuracy claims.</li>
+  </ul>
+</section>
+
+<footer>PR Risk Scorer — Product Requirements Document</footer>
+</div>
+</body>
+</html>

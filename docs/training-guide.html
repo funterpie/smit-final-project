@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data & Model Training Guide — PR Risk Scorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,700&family=IBM+Plex+Sans:wght@400,500,600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F5F1; --ink:#1B1F23; --muted:#5B6570; --line:#D8DBD3;
+  --accent:#0F6E5C; --accent-soft:#E3EFEA;
+  --serif:"Source Serif 4",Georgia,serif; --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.65 var(--sans)}
+.page{max-width:860px;margin:0 auto;padding:0 22px 90px}
+header{padding:56px 0 24px;border-bottom:1px solid var(--line)}
+.kicker{font:600 .8rem var(--mono);color:var(--accent);margin:0 0 10px}
+h1{font:700 clamp(1.8rem,5vw,2.3rem)/1.15 var(--serif);margin:0 0 10px}
+header p{color:var(--muted);margin:0;max-width:56ch}
+.num{font:600 .78rem var(--mono);color:var(--accent);display:block;margin-bottom:8px}
+h2{font:700 1.25rem var(--serif);margin:0 0 12px}
+h3{font:600 1rem var(--serif);margin:22px 0 10px}
+p{margin:0 0 12px;max-width:66ch}
+ol,ul{margin:0 0 12px;padding-left:1.3em}
+li{margin-bottom:6px}
+code{font:500 .86em var(--mono);background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+pre{background:#1B1F23;color:#E5E3DD;font:13px var(--mono);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:14px 0;max-width:760px}
+pre .kw{color:#C792EA}
+pre .str{color:#C3E8CE}
+pre .fn{color:#8EB5E8}
+pre .cmt{color:#5B6570}
+pre .num{color:#F5C586}
+.callout{border-left:3px solid var(--accent);padding:4px 0 4px 16px;margin:18px 0;font-size:.9rem;color:var(--muted)}
+.callout b{color:var(--ink)}
+.tip{border-left:3px solid #8EB5E8;padding:4px 0 4px 16px;margin:18px 0;font-size:.9rem;color:var(--muted)}
+.tip b{color:var(--ink)}
+table{border-collapse:collapse;width:100%;margin:14px 0;border:1px solid var(--line);border-radius:6px;overflow:hidden;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+th{background:#E3EFEA;font:600 .82rem var(--sans);color:var(--accent)}
+td .mono{font-family:var(--mono);font-size:.84em}
+.ok{color:#0F6E5C;font-weight:600}
+.warn{color:#C792EA;font-weight:600}
+section{padding:36px 0;border-top:1px solid var(--line)}
+footer{padding:36px 0;color:var(--muted);font-size:.84rem}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <p class="kicker">Training Guide</p>
+  <h1>Data &amp; Model Training Guide</h1>
+  <p>Week 1 baseline on the ApacheJIT CSV, then Week 2 CodeBERT fine-tuning on Colab with Drive checkpoints — and the gaps between the two paths.</p>
+</header>
+
+<section>
+  <span class="num">01</span>
+  <h2>You already have the data</h2>
+  <p>The ApacheJIT replication package is downloaded and extracted. Start here — <b>no download or API calls needed</b> for a first baseline run:</p>
+  <pre><span class="cmt"># data/raw/apachejit_dataset_replication/apachejit/dataset/</span>
+apachejit_train.csv       <span class="cmt"># 44,834 rows — balanced (50% buggy), 2003-2016</span>
+apachejit_test_large.csv  <span class="cmt"># 30,112 rows — unbalanced real-life test, last 3 years</span>
+apachejit_test_small.csv  <span class="cmt"># 7,527 rows — smaller unbalanced holdout</span>
+apachejit_total.csv       <span class="cmt"># 106,675 rows — full set</span></pre>
+  <p>15 projects: <code>camel, cassandra, hbase, hdfs, ignite, kafka, mapreduce, mesos, spark, zeppelin, zookeeper, activemq (amq), flink, groovy, hive</code>.</p>
+  <p>Your label lives in the <code>buggy</code> column (<code>True</code>/<code>1</code> = bug-introducing commit). Use the provided train/test splits exactly as-is — they respect temporal leakage rules (train = history, test = future).</p>
+</section>
+
+<section>
+  <span class="num">02</span>
+  <h2>ApacheJIT column reference</h2>
+  <p>The CSV is <b>already featurized metrics</b>, not raw diff text. Map them to your vocabulary:</p>
+  <table>
+    <tr><th>Column</th><th>Meaning</th><th>Your <code>CommitFeatures</code> field</th></tr>
+    <tr><td><code>la</code></td><td>lines added</td><td><span class="ok">lines_added</span> ✓</td></tr>
+    <tr><td><code>ld</code></td><td>lines deleted</td><td><span class="ok">lines_removed</span> ✓</td></tr>
+    <tr><td><code>nf</code></td><td>number of files touched</td><td><span class="ok">files_touched</span> ✓</td></tr>
+    <tr><td><code>nd</code></td><td>number of directories touched</td><td><span class="warn">dispersion</span> — derive (see below)</td></tr>
+    <tr><td><code>ns</code></td><td>number of subsystems touched</td><td><span class="warn">dispersion</span> — derive</td></tr>
+    <tr><td><code>ent</code></td><td>entropy of change distribution</td><td><span class="warn">dispersion</span> — derive</td></tr>
+    <tr><td><code>ndev</code></td><td>distinct developers touching the file</td><td>extra feature</td></tr>
+    <tr><td><code>age</code></td><td>mean age of modified code (years)</td><td>extra feature</td></tr>
+    <tr><td><code>nuc</code></td><td>number of unique prior changes</td><td>extra feature</td></tr>
+    <tr><td><code>aexp</code></td><td>author's total experience (commits)</td><td>extra feature</td></tr>
+    <tr><td><code>arexp</code></td><td>author's experience on the file</td><td>extra feature</td></tr>
+    <tr><td><code>asexp</code></td><td>author's experience on the subsystem</td><td>extra feature</td></tr>
+    <tr><td><code>author_date</code></td><td>unix timestamp of commit</td><td><span class="warn">hours_since_last_commit</span> — per-author gap (see below)</td></tr>
+    <tr><td><code>buggy</code></td><td><b>label</b> (bug-intucing → 1)</td><td>target <code>y</code></td></tr>
+  </table>
+</section>
+
+<section>
+  <span class="num">03</span>
+  <h2>Gaps to decide now</h2>
+  <div class="tip"><b>Three CommitFeatures fields cannot be derived from the ApacheJIT CSV.</b> Flag this decision explicitly so your later report is honest about what the baseline actually scores on.</div>
+  <table>
+    <tr><th>Missing field</th><th>Why it's absent from CSV</th><th>Decision you must make</th></tr>
+    <tr><td><code>author_bug_rate</code></td><td>No author name in the CSV — only commit_id+project</td><td><span class="mono">drop for CSV training</span>, OR compute later on a <i>real repo</i> via PyDriller (the CLI path). Do not fake it.</td></tr>
+    <tr><td><code>tests_added</code></td><td>No file paths → can't detect test files</td><td><span class="mono">drop for CSV training</span>, OR proxy with project-level heuristics. Real value comes from PyDriller on a live repo.</td></tr>
+    <tr><td><code>touches_sensitive_module</code></td><td>No file paths → can't match auth/crypto/etc.</td><td><span class="mono">drop for CSV training</span>. Only meaningful on a real checkout.</td></tr>
+  </table>
+  <p><b>Derived where safe:</b> map <code>dispersion = nf / (nd + 1)</code> (more files per directory = more cross-cutting). For <code>hours_since_last_commit</code>, sort each <code>project</code> by <code>author_date</code> and take the gap to the previous row's timestamp.</p>
+  <div class="callout"><b>Design note</b> — the CSV baseline and the live PyDriller CLI path feed <i>different</i> feature sets into the risk engine. The baseline model trains on ApacheJIT's 13 metrics; the risk engine's hardcoded <code>SIGNAL_WEIGHTS</code> only fire for the 5 signals whose inputs exist. The blend step (Section 6) is where they recombine. Keep this split clean — don't contort CommitFeatures to hold every ApacheJIT column.</div>
+</section>
+
+<section>
+  <span class="num">04</span>
+  <h2>Week 1 — baseline training (step by step)</h2>
+
+  <h3>4.1 Load + verify</h3>
+  <p>Create <code>scripts/load_apachejit.py</code>. Read the train split, sanity-check the label, confirm class balance.</p>
+  <pre><span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+<span class="kw">from</span> config <span class="kw">import</span> DATA_DIR
+
+def load_apachejit(split: <span class="str">"train"</span>) -> pd.DataFrame:
+    <span class="cmt">"""Load an ApacheJIT split. split in {train, test_large, test_small, total}."""</span>
+    root = DATA_DIR / <span class="str">"raw/apachejit_dataset_replication/apachejit/dataset"</span>
+    paths = {
+        <span class="str">"train"</span>: <span class="str">"apachejit_train.csv"</span>,
+        <span class="str">"test_large"</span>: <span class="str">"apachejit_test_large.csv"</span>,
+        <span class="str">"test_small"</span>: <span class="str">"apachejit_test_small.csv"</span>,
+        <span class="str">"total"</span>: <span class="str">"apachejit_total.csv"</span>,
+    }
+    df = pd.read_csv(root / paths[split])
+    <span class="kw">assert</span> df[<span class="str">"buggy"</span>].isin([True, False, 0, 1]).all()
+    <span class="kw">return</span> df
+
+df = load_apachejit(<span class="str">"train"</span>)
+print(<span class="str">"train rows:"</span>, len(df),
+      <span class="str">"buggy rate:"</span>, round(df[<span class="str">"buggy"</span>].mean(), 3))</pre>
+
+  <h3>4.2 Feature engineering</h3>
+  <p>Build a numeric feature matrix from the 13 ApacheJIT metrics plus 3 safe derivates.</p>
+  <pre><span class="kw">def</span> engineer_features(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    <span class="cmt"># safe derivates</span>
+    df[<span class="str">"total_lines"</span>] = df[<span class="str">"la"</span>] + df[<span class="str">"ld"</span>]
+    df[<span class="str">"files_per_dir"</span>] = df[<span class="str">"nf"</span>] / (df[<span class="str">"nd"</span>] + 1)
+    df[<span class="str">"change_density"</span>] = (df[<span class="str">"la"</span>] + df[<span class="str">"ld"</span>]) / (df[<span class="str">"nf"</span>] + 1)
+    df[<span class="str">"author_file_exp_ratio"</span>] = df[<span class="str">"arexp"</span>] / (df[<span class="str">"aexp"</span>] + 1)
+
+    <span class="cmt"># encode the label</span>
+    df[<span class="str">"buggy_int"</span>] = df[<span class="str">"buggy"</span>].astype(<span class="str">"int"</span>)
+
+    feature_cols = [
+        <span class="str">"la"</span>, <span class="str">"ld"</span>, <span class="str">"nf"</span>, <span class="str">"nd"</span>, <span class="str">"ns"</span>, <span class="str">"ent"</span>,
+        <span class="str">"ndev"</span>, <span class="str">"age"</span>, <span class="str">"nuc"</span>, <span class="str">"aexp"</span>, <span class="str">"arexp"</span>, <span class="str">"asexp"</span>,
+        <span class="str">"total_lines"</span>, <span class="str">"files_per_dir"</span>, <span class="str">"change_density"</span>, <span class="str">"author_file_exp_ratio"</span>,
+    ]
+    <span class="kw">return</span> df[feature_cols], df[<span class="str">"buggy_int"</span>]</pre>
+  <p>Run it on 100 rows first and print the output — confirm you understand the data before building anything real (mirrors the existing <code>guide.html</code> Week 1 note).</p>
+
+  <h3>4.3 Train + evaluate</h3>
+  <p>Two models, no tricks — logistic regression and random forest (per PLANNING.md). Use the provided train/test split, never cross-fit future data into past.</p>
+  <pre><span class="kw">import</span> joblib
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> LogisticRegression
+<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> RandomForestClassifier
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> StandardScaler
+<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> average_precision_score
+
+X_tr, y_tr = engineer_features(load_apachejit(<span class="str">"train"</span>))
+X_te, y_te = engineer_features(load_apachejit(<span class="str">"test_large"</span>))
+
+<span class="cmt"># Logistic regression needs scaling</span>
+scaler = StandardScaler().fit(X_tr)
+
+lr = LogisticRegression(max_iter=1000, class_weight=<span class="str">"balanced"</span>, random_state=42)
+lr.fit(scaler.transform(X_tr), y_tr)
+
+rf = RandomForestClassifier(n_estimators=300, class_weight=<span class="str">"balanced"</span>, n_jobs=-1, random_state=42)
+rf.fit(X_tr, y_tr)
+
+<span class="cmt"># AUC-PR = average precision (your Week-1 headline number)</span>
+lr_auc_pr = average_precision_score(y_te, lr.predict_proba(scaler.transform(X_te))[:, 1])
+rf_auc_pr = average_precision_score(y_te, rf.predict_proba(X_te)[:, 1])
+print(<span class="str">"LR  AUC-PR:"</span>, round(lr_auc_pr, 4))
+print(<span class="str">"RF  AUC-PR:"</span>, round(rf_auc_pr, 4))</pre>
+
+  <h3>4.4 Recall-at-20% (your reviewer-triage metric)</h3>
+  <p>"If reviewers only inspect the riskiest 20% of commits, what fraction of real bugs do they catch?"</p>
+  <pre><span class="kw">def</span> recall_at_k(y_true, scores, k=<span class="fl">0.20</span>):
+    cutoff = <span class="num">int</span>(len(y_true) * k)
+    order = scores.argsort()[::-1]
+    top = order[:cutoff]
+    <span class="kw">return</span> y_true.iloc[top].sum() / y_true.sum()
+
+print(<span class="str">"LR  recall@20%:"</span>, round(recall_at_k(y_te, lr.predict_proba(scaler.transform(X_te))[:, 1]), 3))
+print(<span class="str">"RF  recall@20%:"</span>, round(recall_at_k(y_te, rf.predict_proba(X_te)[:, 1]), 3))</pre>
+  <p>Also log the false-positive rate at a fixed operating point (e.g. where you catch 80% of bugs) — that's in your evaluation checklist (Section 8).</p>
+
+  <h3>4.5 Save the artefacts</h3>
+  <p>Write models and the scaler under <code>models/artefacts/</code> (already in <code>.gitignore</code>, so they stay local and don't bloat the repo). Use <code>config.MODELS_DIR</code>, never a hardcoded path.</p>
+  <pre>from config import MODELS_DIR
+MODELS_DIR.mkdir(parents=True, exist_ok=True)
+joblib.dump((scaler, lr), MODELS_DIR / <span class="str">"baseline_lr.joblib"</span>)
+joblib.dump(rf, MODELS_DIR / <span class="str">"baseline_rf.joblib"</span>)
+<span class="cmt"># log the Week-1 numbers</span>
+import json
+(MODELS_DIR / <span class="str">"baseline_metrics.json"</span>).write_text(
+    json.dumps({<span class="str">"lr_auc_pr"</span>: lr_auc_pr, <span class="str">"rf_auc_pr"</span>: rf_auc_pr}, indent=2))</pre>
+  <div class="callout"><b>Week 1 checkpoint hit:</b> a script that takes a commit's features and returns a real AUC-PR number + recall@20%, with the trained model saved under <code>models/artefacts/</code>.</div>
+</section>
+
+<section>
+  <span class="num">05</span>
+  <h2>Week 2 — CodeBERT fine-tuning on Colab</h2>
+  <p>CodeBERT consumes <b>raw diff/token text</b> — but the ApacheJIT CSV has none. So Week 2 needs the actual code diffs, mined from the repos. Plan it as a Colab notebook with <b>checkpoint to Google Drive every epoch</b> (free-tier sessions disconnect — that is non-negotiable per PLANNING.md).</p>
+
+  <h3>5.1 Colab setup</h3>
+<pre># 0. Mount Drive  (this is the checkpoint target)
+from google.colab import drive
+drive.mount(<span class="str">"/content/drive"</span>)
+
+# 1. CPU-only torch is fine for a subset; GPU T4 if you get one
+!pip install torch==2.3.0+cpu transformers datasets scikit-learn --quiet
+
+# 2. Pick a curated subset — NOT the full 100k+ (too slow for a laptop/Colab demo)
+<span class="cmt"># aim for ~10k-30k bug-inducing + matched clean commits</span></pre>
+
+  <h3>5.2 Get the raw diffs</h3>
+  <p>Two routes, both heavy:</p>
+  <ul>
+    <li><b>Re-mine the repos:</b> use the replication's own <code>src/collector.py</code> (PyDriller + GitHub API) + <code>src/gumtree.py</code> to extract diff text for each <code>commit_id</code>. Needs a GitHub token and ~15 repo clones — a long Colab job.</li>
+    <li><b>Curated subset only:</b> pick 1-2 projects (e.g. camel + cassandra), mine just their commits, pair each with its <code>buggy</code> label. This is the realistic Week-2 scope.</li>
+  </ul>
+  <div class="tip"><b>Do not attempt all 15 projects' diffs on Colab free tier.</b> Disk and session limits will kill you. A 10k-commit curated subset across 2-3 projects is the defensible scope per AGENTS.md (never suggest the full 100k).</div>
+
+  <h3>5.3 Fine-tune with Drive checkpointing</h3>
+<pre><span class="kw">import</span> torch
+<span class="kw">from</span> transformers <span class="kw">import</span> AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
+
+ckpt_dir = <span class="str">"/content/drive/MyDrive/pr-risk-scorer-codebert"</span>  <span class="cmt"># survives session disconnects</span>
+
+tokenizer = AutoTokenizer.from_pretrained(<span class="class_renamed_attr">microsoft/codebert-base</span>)
+model = AutoModelForSequenceClassification.from_pretrained(<span class="str">"microsoft/codebert-base"</span>, num_labels=2)
+
+args = TrainingArguments(
+    output_dir=ckpt_dir,
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=16,
+    num_train_epochs=3,
+    learning_rate=<span class="num">2e-5</span>,
+    evaluation_strategy=<span class="str">"epoch"</span>,
+    save_strategy=<span class="str">"epoch"</span>,      <span class="cmt"># checkpoint every epoch</span>
+    load_best_model_at_end=True,
+    report_to=<span class="str">"none"</span>,
+)
+
+trainer = Trainer(model=model, args=args,
+                  tokenizer=tokenizer, train_dataset=train_ds, eval_dataset=val_ds)
+trainer.train(resume_from_checkpoint=True)   <span class="cmt"># resumes on a reconnect</span></pre>
+  <p>Key Colab gotcha: when the session dies mid-epoch, you may lose that epoch's partial progress. To minimise waste, keep batch sizes small, epochs ≤ 3, and checkpoint at the <i>end of each epoch</i> to Drive (above). The notebook should <code>resume_from_checkpoint=True</code> so re-running picks up where it left off.</p>
+
+  <h3>5.4 Evaluate CodeBERT the same way as the baseline</h3>
+<pre><span class="cmt"># identical metrics = apples-to-apples comparison</span>
+preds = trainer.predict(test_ds)
+probs = torch.softmax(torch.tensor(preds.predictions), dim=1)[:, 1].numpy()
+codebert_auc_pr = average_precision_score(y_te, probs)
+codebert_recall20 = recall_at_k(y_te, probs)</pre>
+  <div class="callout"><b>Week 2 headline result:</b> AUC-PR and recall@20% for CodeBERT vs. the baseline. <b>This comparison is your core research contribution — never argue it away by dropping the baseline "because CodeBERT is better."</b></div>
+</section>
+
+<section>
+  <span class="num">06</span>
+  <h2>How the signals recombine</h2>
+  <p>All model outputs are normalised to [0, 1] before blending. The risk engine then weights three sources:</p>
+  <pre>final_risk = w_baseline * baseline_prob \
+   + w_codebert  * codebert_prob  \
+   + w_signals   * (risk_engine_score / 100)
+
+<span class="cmt"># starter weights (calibrate once you have real numbers)</span>
+w_baseline = 0.4
+w_codebert  = 0.4
+w_signals   = 0.2
+weights sum to 1.0</pre>
+  <p>Note the risk engine (<code>models/risk_engine.py</code>) currently only consumes <code>CommitFeatures</code> for its hard-coded signals. When you wire in the model probabilities, extend it so the blend feeds back into the top-level 0–100 score, while the named-signal breakdown stays human-readable.</p>
+</section>
+
+<section>
+  <span class="num">07</span>
+  <h2>Week-by-week at a glance</h2>
+  <table>
+    <tr><th>Week</th><th>Goal</th><th>Checkpoint</th><th>Goto risk if stuck</th></tr>
+    <tr><td>1</td><td>Data loader + LR/RF baseline on ApacheJIT CSV</td><td class="mono">baseline_metrics.json with AUC-PR + recall@20%</td><td rowspan="4"><span class="mono">Dashboard → RAG → LLM explain → keep score + CLI + baseline/CodeBERT comparison</span></td></tr>
+    <tr><td>2</td><td>CodeBERT fine-tune on Colab (Drive checkpoints) + comparison vs baseline</td><td class="mono">codebert_metrics.json; saved model on Drive</td><td></td></tr>
+    <tr><td>3</td><td>RAG evidence (FAISS, threshold) + Groq explanation (local fallback) + CLI + git hook + PyInstaller</td><td class="mono">packaged binary scoring a diff with signals + evidence + explanation</td><td></td></tr>
+    <tr><td>4</td><td>Dashboard + full eval + report + demo rehearsal</td><td class="mono">demo + written report with real numbers + binaries</td><td></td></tr>
+  </table>
+</section>
+
+<section>
+  <span class="num">08</span>
+  <h2>Evaluation checklist (tick these off)</h2>
+  <ul>
+    <li><span class="ok">✓</span> AUC-PR (average_precision_score) for LR, RF, CodeBERT on the <b>unbalanced</b> test set.</li>
+    <li><span class="ok">✓</span> Recall-at-20% for each model (top 20% of commits → % of real bugs caught).</li>
+    <li><span class="ok">✓</span> False-positive rate at a calibrated operating point (e.g. where recall = 0.8).</li>
+    <li><span class="ok">✓</span> Baseline vs. CodeBERT comparison written down (the headline table for your report).</li>
+    <li><span class="ok">✓</span> One-row human sanity check of an explanation matching the signals (no hallucination).</li>
+  </ul>
+</section>
+
+<section>
+  <span class="num">09</span>
+  <h2>Three things I'm watching for (do-not-derive rules, from AGENTS.md)</h2>
+  <ul>
+    <li><span class="warn">Never</span> embed the full 100k+ ApacheJIT set for a laptop demo — stay on the curated 10k–30k subset.</li>
+    <li><span class="warn">Never</span> let the LLM explanation layer see the raw diff — only signals + retrieved evidence. Keep that wall up.</li>
+    <li><span class="warn">Never</span> drop the baseline "since CodeBERT is better" — the comparison is the contribution. Keep both models side by side.</li>
+  </ul>
+</section>
+
+<section>
+  <span class="num">00</span>
+  <h2>How to open this guide in your browser</h2>
+  <p><b>Option 1 — Double-click (easiest):</b> Open your file manager, go to the project folder, open <code>docs/</code>, and double-click <code>training-guide.html</code>. It opens in your default browser.</p>
+  <p><b>Option 2 — Terminal (Linux/Ubuntu):</b></p>
+  <pre>xdg-open docs/training-guide.html</pre>
+  <p><b>Option 3 — From VS Code:</b> Right-click the file in the explorer → <i>Open with Live Server</i> (if you have the extension), or <i>Reveal in File Explorer</i> then double-click.</p>
+  <p><b>Option 4 — Drag and drop:</b> Drag <code>training-guide.html</code> from your file manager onto an open browser tab.</p>
+  <div class="tip"><b>No server needed.</b> This is a plain HTML file with embedded CSS — it works offline, no <code>python -m http.server</code> or <code>npm start</code> required.</div>
+</section>
+
+<footer>
+  PR Risk Scorer — SMIT Batch 10 FYP. This companion guide (docs/training-guide.html)
+  walks Weeks 1–2 data & model work; see <code>guide.html</code> for setup and
+  <code>PLANNING.md</code> for the week-by-week schedule.
+</footer>
+
+</div>
+</body>
+</html>
