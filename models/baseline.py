@@ -40,9 +40,9 @@ _RF_MODEL_PATH = MODELS_DIR / "rf_baseline.pkl"
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _features_to_array(features: CommitFeatures) -> np.ndarray:
-    """Convert CommitFeatures to a 1-row numpy array in the correct column order."""
-    return np.array([[
+def _features_to_array(features: CommitFeatures) -> pd.DataFrame:
+    """Convert CommitFeatures to a 1-row DataFrame with named columns."""
+    return pd.DataFrame([[
         features.lines_added,
         features.lines_removed,
         features.files_touched,
@@ -51,7 +51,7 @@ def _features_to_array(features: CommitFeatures) -> np.ndarray:
         features.hours_since_last_commit,
         int(features.tests_added),
         int(features.touches_sensitive_module),
-    ]])
+    ]], columns=FEATURE_COLS)
 
 
 def _load_data(train_csv: str, test_csv: str) -> tuple[
