@@ -1,0 +1,20 @@
+{
+  "heuristic": {
+    "auc_roc": 0.6345,
+    "auc_pr": 0.3785,
+    "recall_at_20pct": 0.3711,
+    "fpr_at_0.5": 0.1224
+  },
+  "baseline_lr": {
+    "auc_roc": 0.6878,
+    "auc_pr": 0.452,
+    "recall_at_20pct": 0.3365,
+    "fpr_at_0.5": 0.2846
+  },
+  "baseline_rf": {
+    "auc_roc": 0.7423,
+    "auc_pr": 0.511,
+    "recall_at_20pct": 0.4182,
+    "fpr_at_0.5": 0.102
+  }
+}
