@@ -10,12 +10,17 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from features.schema import CommitFeatures
+
+# Session-level cache: filepath -> (tokenizer, model)
+# Prevents reloading the 500 MB model on every call during eval loops.
+_MODEL_CACHE: dict[str, tuple[Any, Any]] = {}
 
 _FEATURE_COLS = [
     "lines_added", "lines_removed", "files_touched", "dispersion",
@@ -173,6 +178,8 @@ def fine_tune_codebert(
 def predict_codebert(features: CommitFeatures, checkpoint_dir: str | None = None) -> float:
     """Return CodeBERT's bug-inducing probability for one commit.
 
+    Uses a session-level cache so the model is loaded only once per process.
+
     Args:
         features: Structured commit features (NEVER the raw diff).
         checkpoint_dir: Path to the fine-tuned model directory.
@@ -202,9 +209,15 @@ def predict_codebert(features: CommitFeatures, checkpoint_dir: str | None = None
             "Run the Colab fine-tuning notebook first."
         )
 
-    tokenizer = AutoTokenizer.from_pretrained(str(model_path))
-    model = AutoModelForSequenceClassification.from_pretrained(str(model_path))
-    model.eval()
+    cache_key = str(model_path)
+    if cache_key not in _MODEL_CACHE:
+        print(f"[codebert] Loading model from {model_path} (first call — cached for session)")
+        tokenizer = AutoTokenizer.from_pretrained(cache_key)
+        model = AutoModelForSequenceClassification.from_pretrained(cache_key)
+        model.eval()
+        _MODEL_CACHE[cache_key] = (tokenizer, model)
+    else:
+        tokenizer, model = _MODEL_CACHE[cache_key]
 
     text = _features_to_text(features)
     enc = tokenizer(text, return_tensors="pt", max_length=128, truncation=True, padding="max_length")

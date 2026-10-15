@@ -16,5 +16,11 @@
     "auc_pr": 0.511,
     "recall_at_20pct": 0.4182,
     "fpr_at_0.5": 0.102
+  },
+  "codebert": {
+    "auc_roc": 0.7604,
+    "auc_pr": 0.5314,
+    "recall_at_20pct": 0.4245,
+    "fpr_at_0.5": 0.1281
   }
 }
