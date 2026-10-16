@@ -30,6 +30,7 @@ models/artefacts/
 *.pth
 *.pkl
 *.onnx
+*.zip
 
 # --- FAISS index ---
 rag/index/

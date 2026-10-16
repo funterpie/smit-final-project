@@ -19,6 +19,7 @@ commits without overriding the interpretable signal breakdown.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from features.schema import CommitFeatures
 
@@ -73,7 +74,7 @@ class RiskReport:
             ml_info += f"  |  CodeBERT prob: {self.codebert_prob:.2f}"
         return f"Risk score: {self.score}/100  |  Signals triggered: {fired}{ml_info}"
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         """Serialisable dict for API / CLI JSON output."""
         return {
             "score": self.score,

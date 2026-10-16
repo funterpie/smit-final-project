@@ -7,19 +7,21 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from typing import Union
+
 from features.schema import CommitFeatures
 from rag.retrieve import RetrievedEvidence, retrieve_evidence
 
 
-def _sample_features(**overrides: object) -> CommitFeatures:
-    base = dict(
+def _sample_features(**overrides: Union[bool, float, int]) -> CommitFeatures:
+    base: dict[str, Union[bool, float, int]] = dict(
         lines_added=50, lines_removed=10, files_touched=3,
         dispersion=1.5, author_bug_rate=0.1,
         hours_since_last_commit=24.0, tests_added=True,
         touches_sensitive_module=False,
     )
     base.update(overrides)
-    return CommitFeatures(**base)  # type: ignore
+    return CommitFeatures(**base)  # type: ignore[arg-type]
 
 
 class TestRetrievedEvidence:

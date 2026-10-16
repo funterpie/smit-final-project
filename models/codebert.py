@@ -78,8 +78,8 @@ def fine_tune_codebert(
     print(f"[codebert] Loading training data from {train_data_path}...")
     df = pd.read_csv(train_data_path).fillna(0)
 
-    class CommitDataset(Dataset):
-        def __init__(self, df: pd.DataFrame, tokenizer: object, max_len: int = 128) -> None:
+    class CommitDataset(Dataset):  # type: ignore[type-arg]
+        def __init__(self, df: pd.DataFrame, tokenizer: Any, max_len: int = 128) -> None:
             self.texts = []
             self.labels = []
             for _, row in df.iterrows():
@@ -101,7 +101,7 @@ def fine_tune_codebert(
         def __len__(self) -> int:
             return len(self.texts)
 
-        def __getitem__(self, idx: int) -> dict:
+        def __getitem__(self, idx: int) -> dict[str, Any]:
             enc = self.tokenizer(
                 self.texts[idx],
                 max_length=self.max_len,
@@ -115,15 +115,16 @@ def fine_tune_codebert(
                 "labels": torch.tensor(self.labels[idx], dtype=torch.long),
             }
 
-    ckpt_path = Path(checkpoint_dir)
+    ckpt_path: Path = Path(checkpoint_dir)
     ckpt_path.mkdir(parents=True, exist_ok=True)
 
-    tokenizer = AutoTokenizer.from_pretrained("microsoft/codebert-base")
+    tokenizer: Any = AutoTokenizer.from_pretrained("microsoft/codebert-base")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[codebert] Device: {device}")
 
     # Resume from checkpoint if exists
     model_dir = ckpt_path / "best_model"
+    model: Any
     if model_dir.exists():
         print(f"[codebert] Resuming from checkpoint {model_dir}")
         model = AutoModelForSequenceClassification.from_pretrained(str(model_dir))
@@ -212,15 +213,15 @@ def predict_codebert(features: CommitFeatures, checkpoint_dir: str | None = None
     cache_key = str(model_path)
     if cache_key not in _MODEL_CACHE:
         print(f"[codebert] Loading model from {model_path} (first call — cached for session)")
-        tokenizer = AutoTokenizer.from_pretrained(cache_key)
-        model = AutoModelForSequenceClassification.from_pretrained(cache_key)
+        tokenizer: Any = AutoTokenizer.from_pretrained(cache_key)
+        model: Any = AutoModelForSequenceClassification.from_pretrained(cache_key)
         model.eval()
         _MODEL_CACHE[cache_key] = (tokenizer, model)
     else:
         tokenizer, model = _MODEL_CACHE[cache_key]
 
     text = _features_to_text(features)
-    enc = tokenizer(text, return_tensors="pt", max_length=128, truncation=True, padding="max_length")
+    enc: Any = tokenizer(text, return_tensors="pt", max_length=128, truncation=True, padding="max_length")
 
     with torch.no_grad():
         logits = model(**enc).logits

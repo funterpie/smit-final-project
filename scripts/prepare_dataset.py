@@ -22,6 +22,7 @@ import csv
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 # Allow running as a top-level script
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -60,7 +61,7 @@ def main(sample: int = 0, seed: int = 42) -> None:
 
     # Map to CommitFeatures
     print("[prepare_dataset] Extracting features from dataset rows...")
-    rows: list[dict] = []
+    rows: list[dict[str, Any]] = []
     for _, row in df.iterrows():
         feat = features_from_apachejit_row(row.to_dict())
         record = feat.model_dump()

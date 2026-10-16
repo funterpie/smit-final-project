@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -82,7 +82,7 @@ def _try_codebert_prob(features: CommitFeatures) -> float | None:
         return None
 
 
-def _try_rag(features: CommitFeatures) -> dict | None:
+def _try_rag(features: CommitFeatures) -> dict[str, Any] | None:
     try:
         from rag.retrieve import retrieve_evidence
         ev = retrieve_evidence(features, index_dir=str(INDEX_DIR), threshold=SIMILARITY_THRESHOLD)
@@ -93,7 +93,7 @@ def _try_rag(features: CommitFeatures) -> dict | None:
         return None
 
 
-def _try_explain(report: object, evidence: dict | None) -> dict | None:
+def _try_explain(report: object, evidence: dict[str, Any] | None) -> dict[str, Any] | None:
     try:
         from explain.llm_explain import explain_risk
         from rag.retrieve import RetrievedEvidence
@@ -113,12 +113,12 @@ def _try_explain(report: object, evidence: dict | None) -> dict | None:
 # ---------------------------------------------------------------------------
 
 @app.get("/health")
-def health() -> dict:
+def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
 @app.post("/review")
-def review(req: ReviewRequest) -> dict:
+def review(req: ReviewRequest) -> dict[str, Any]:
     """Score a commit. Supply either `features` directly or `repo_path` + `commit_hash`."""
     if req.features:
         features = req.features
@@ -147,13 +147,13 @@ def review(req: ReviewRequest) -> dict:
 
 
 @app.get("/decisions")
-def get_decisions(limit: int = 50) -> list[dict]:
+def get_decisions(limit: int = 50) -> list[dict[str, Any]]:
     """Return audit log decisions (newest first)."""
     return list_decisions(AUDIT_DB_PATH)[:limit]
 
 
 @app.post("/decisions")
-def post_decision(req: DecisionRequest) -> dict:
+def post_decision(req: DecisionRequest) -> dict[str, Any]:
     """Log a human reviewer decision."""
     try:
         row_id = insert_decision(

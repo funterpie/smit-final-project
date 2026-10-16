@@ -11,9 +11,11 @@ import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import faiss
 import numpy as np
+import numpy.typing as npt
 from sentence_transformers import SentenceTransformer
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -76,11 +78,11 @@ def retrieve_evidence(
 
     index = faiss.read_index(str(index_path))
     with meta_path.open() as fh:
-        metadata: list[dict] = json.load(fh)
+        metadata: list[dict[str, Any]] = json.load(fh)
 
     model = SentenceTransformer("all-MiniLM-L6-v2")
     query_text = _build_query_text(features)
-    query_vec: np.ndarray = model.encode(
+    query_vec: npt.NDArray[np.float32] = model.encode(
         [query_text], normalize_embeddings=True
     ).astype(np.float32)
 

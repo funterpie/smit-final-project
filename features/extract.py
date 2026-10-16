@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 from collections import Counter
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from pydriller import Repository
 
@@ -41,7 +41,7 @@ def _path_dispersion(modified_files: list[str]) -> float:
     """
     if not modified_files:
         return 0.0
-    dirs = [str(Path(f).parts[0]) if len(Path(f).parts) > 1 else "_root"
+    dirs = [Path(f).parts[0] if len(Path(f).parts) > 1 else "_root"
             for f in modified_files]
     counts = Counter(dirs)
     total = sum(counts.values())
@@ -115,7 +115,7 @@ def extract_features(repo_path: str, commit_hash: str) -> CommitFeatures:
     )
 
 
-def features_from_apachejit_row(row: dict) -> CommitFeatures:
+def features_from_apachejit_row(row: dict[str, Any]) -> CommitFeatures:
     """Map an ApacheJIT CSV row dict to CommitFeatures.
 
     ApacheJIT columns used:

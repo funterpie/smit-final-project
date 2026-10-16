@@ -103,7 +103,8 @@ def _groq_explain(
         max_tokens=256,
         temperature=0.3,
     )
-    return response.choices[0].message.content.strip()
+    content = response.choices[0].message.content
+    return content.strip() if content else ""
 
 
 # ---------------------------------------------------------------------------

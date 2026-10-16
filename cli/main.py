@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import AUDIT_DB_PATH, GROQ_API_KEY, INDEX_DIR, SIMILARITY_THRESHOLD
 from features.schema import CommitFeatures
 from models.risk_engine import RiskReport, compute_risk
+from rag.retrieve import RetrievedEvidence
 
 app = typer.Typer(
     name="prscore",
@@ -53,7 +54,7 @@ def _try_codebert_prob(features: CommitFeatures) -> float | None:
         return None
 
 
-def _try_rag_evidence(features: CommitFeatures) -> object | None:
+def _try_rag_evidence(features: CommitFeatures) -> RetrievedEvidence | None:
     """Attempt RAG evidence retrieval; return None if index not built yet."""
     try:
         from rag.retrieve import retrieve_evidence
@@ -62,7 +63,7 @@ def _try_rag_evidence(features: CommitFeatures) -> object | None:
         return None
 
 
-def _try_explain(report: RiskReport, evidence: object | None) -> object | None:
+def _try_explain(report: RiskReport, evidence: RetrievedEvidence | None) -> object | None:
     """Attempt LLM explanation; return None on any failure."""
     try:
         from explain.llm_explain import explain_risk
@@ -74,7 +75,7 @@ def _try_explain(report: RiskReport, evidence: object | None) -> object | None:
 def _print_report(
     commit_ish: str,
     report: RiskReport,
-    evidence: object | None,
+    evidence: RetrievedEvidence | None,
     explanation: object | None,
     as_json: bool = False,
 ) -> None:

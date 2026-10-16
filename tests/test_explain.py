@@ -3,12 +3,12 @@
 import pytest
 
 from features.schema import CommitFeatures
-from models.risk_engine import compute_risk
+from models.risk_engine import compute_risk, RiskReport
 from explain.llm_explain import explain_risk, Explanation, _local_fallback
 from rag.retrieve import RetrievedEvidence
 
 
-def _make_report(tests_added: bool = False, author_bug_rate: float = 0.5):
+def _make_report(tests_added: bool = False, author_bug_rate: float = 0.5) -> RiskReport:
     feat = CommitFeatures(
         lines_added=400,
         lines_removed=5,

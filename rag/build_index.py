@@ -18,15 +18,17 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 EMBEDDING_DIM = 384  # all-MiniLM-L6-v2 output dim
 
 
-def _build_text_repr(record: dict) -> str:
+def _build_text_repr(record: dict[str, Any]) -> str:
     """Convert a bug-inducing commit record to a short text for embedding."""
     return (
         f"project={record.get('project', 'unknown')} "
@@ -65,7 +67,7 @@ def build_index(
     out_dir.mkdir(parents=True, exist_ok=True)
 
     jsonl_path = Path(commits_jsonl_path)
-    records: list[dict] = []
+    records: list[dict[str, Any]] = []
     with jsonl_path.open() as fh:
         for line in fh:
             line = line.strip()
@@ -78,7 +80,7 @@ def build_index(
     texts = [_build_text_repr(r) for r in records]
 
     print(f"[rag.build_index] Encoding with {embedding_model}...")
-    embeddings: np.ndarray = model.encode(
+    embeddings: npt.NDArray[np.float32] = model.encode(
         texts, batch_size=batch_size, show_progress_bar=True, normalize_embeddings=True
     )
     print(f"[rag.build_index] Embeddings shape: {embeddings.shape}")

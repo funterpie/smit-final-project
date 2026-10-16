@@ -34,8 +34,8 @@ class TestIsSensitive:
 
 
 class TestFeaturesFromApacheJITRow:
-    def _sample_row(self, **overrides: object) -> dict:
-        base = {
+    def _sample_row(self, **overrides: str) -> dict[str, str]:
+        base: dict[str, str] = {
             "commit_id": "abc123",
             "project": "apache/kafka",
             "buggy": "True",

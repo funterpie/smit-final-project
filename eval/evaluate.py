@@ -14,8 +14,10 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from sklearn.metrics import (
     average_precision_score,
@@ -37,7 +39,7 @@ FEATURE_COLS = [
 ]
 
 
-def recall_at_k_percent(y_true: np.ndarray, y_score: np.ndarray, k: float = 0.20) -> float:
+def recall_at_k_percent(y_true: npt.NDArray[Any], y_score: npt.NDArray[Any], k: float = 0.20) -> float:
     """What fraction of true bugs are caught in the top-k% highest-scored commits?"""
     n = len(y_true)
     n_top = max(1, int(n * k))
@@ -48,7 +50,7 @@ def recall_at_k_percent(y_true: np.ndarray, y_score: np.ndarray, k: float = 0.20
 
 
 def false_positive_rate_at_threshold(
-    y_true: np.ndarray, y_score: np.ndarray, threshold: float = 0.5
+    y_true: npt.NDArray[Any], y_score: npt.NDArray[Any], threshold: float = 0.5
 ) -> float:
     """FPR = FP / (FP + TN) at a given score threshold."""
     preds = (y_score >= threshold).astype(int)
@@ -61,7 +63,7 @@ def evaluate(
     test_csv: str,
     output_json: str | None = None,
     use_codebert: bool = False,
-) -> dict[str, float | dict]:
+) -> dict[str, Any]:
     """Run full evaluation on test set.
 
     Args:
@@ -77,7 +79,7 @@ def evaluate(
 
     print(f"[eval] Test set: {len(df):,} commits  |  Positive rate: {y_true.mean():.3f}")
 
-    results: dict = {}
+    results: dict[str, Any] = {}
 
     # ---- Heuristic risk engine (no ML) ----
     heuristic_scores = []
