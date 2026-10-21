@@ -3,9 +3,9 @@
 
 # PLANNING.md — PR Risk Scorer
 
-Solo build · ~50-60 hours · Ubuntu dev machine · Colab paid  · deadline soft ~1 month (extendable if results are strong)
+Solo build · ~50-60 hours · Ubuntu dev machine · Colab paid  · deadline soft ~1 month (extendable if results are strong) |claude code,antigravity Chat gpt 
 
-## Week 1 — Data & baseline (~14 hrs)
+## Week 1  — Data & baseline (~14 hrs)
 - Download ApacheJIT, understand commit structure + labels
 - Feature extraction with PyDriller/GitPython: diff size, files touched, author bug-history, test presence
 - Train logistic regression + random forest baseline → first AUC-PR number
