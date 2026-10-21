@@ -25,16 +25,21 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
 
     # Determine range to check
     if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
-        # New branch — check last 5 commits
-        RANGE="${local_sha}~5..${local_sha}"
+        # New branch — check up to the last 5 commits, even on short histories
+        COMMIT_LIST=$(git log --max-count=5 --format="%H" "$local_sha") || {
+            echo "[prscore] ERROR: could not read commits for $local_sha; blocking the push." >&2
+            exit 1
+        }
     else
         RANGE="${remote_sha}..${local_sha}"
+        COMMIT_LIST=$(git log --format="%H" "$RANGE") || {
+            echo "[prscore] ERROR: could not read range $RANGE; blocking the push." >&2
+            exit 1
+        }
     fi
 
-    COMMIT_LIST=$(git log --format="%H" "$RANGE" 2>/dev/null || true)
-
     if [ -z "$COMMIT_LIST" ]; then
-        echo "[prscore] No new commits in range $RANGE."
+        echo "[prscore] No new commits to score."
         continue
     fi
 
@@ -42,8 +47,14 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
     for commit in $COMMIT_LIST; do
         echo "[prscore] Scoring commit $commit..."
         # Run prscore; capture score from JSON output
-        SCORE_JSON=$("$PRSCORE_CMD" review "$commit" --repo "$REPO_ROOT" --no-explain --json 2>/dev/null || echo '{"score":0}')
-        SCORE=$(echo "$SCORE_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('score',0))")
+        if ! SCORE_JSON=$("$PRSCORE_CMD" review "$commit" --repo "$REPO_ROOT" --no-explain --json); then
+            echo "[prscore] ERROR: scoring failed for $commit; blocking the push." >&2
+            exit 1
+        fi
+        if ! SCORE=$(printf '%s' "$SCORE_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['score'])"); then
+            echo "[prscore] ERROR: invalid JSON score for $commit; blocking the push." >&2
+            exit 1
+        fi
         echo "[prscore] Commit $commit scored: $SCORE/100"
         if [ "$SCORE" -ge "$RISK_THRESHOLD" ]; then
             echo "[prscore] ⚠ HIGH RISK: $commit scored $SCORE (threshold: $RISK_THRESHOLD)"
@@ -55,7 +66,7 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
         echo ""
         echo "[prscore] ❌ Push blocked: one or more commits exceeded the risk threshold ($RISK_THRESHOLD)."
         echo "   Run 'prscore review <commit>' for details."
-        echo "   Run 'prscore decide <commit> <score> escalate' to log and force-push."
+        echo "   Record an escalation with 'prscore decide <commit> <score> escalate', then review the risk before retrying."
         echo "   To bypass: git push --no-verify"
         exit 1
     fi

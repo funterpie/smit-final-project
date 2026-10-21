@@ -15,7 +15,7 @@ dependencies = [
     "pandas==2.2.2",
     "numpy==1.26.4",
     "scikit-learn==1.5.0",
-    "typer==0.12.3",
+    "typer>=0.16.1,<1.0",
     "rich",
     "python-dotenv==1.0.1",
     "pydantic==2.7.1",
@@ -25,6 +25,11 @@ dependencies = [
 
 [project.scripts]
 prscore = "cli.main:main"
+
+[project.optional-dependencies]
+rag = ["faiss-cpu>=1.8.0", "sentence-transformers>=2.2.0"]
+ml = ["torch>=2.0.0", "transformers>=4.30.0"]
+llm = ["groq>=0.5.0"]
 
 [tool.setuptools.packages.find]
 where = ["."]

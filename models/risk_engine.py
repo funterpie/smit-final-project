@@ -29,7 +29,7 @@ from features.schema import CommitFeatures
 _LARGE_DIFF_LINES_THRESHOLD = 300
 _HIGH_AUTHOR_BUG_RATE_THRESHOLD = 0.3
 _HIGH_DISPERSION_THRESHOLD = 3.0
-_ML_PROB_THRESHOLD = 0.5   # above this, ML signal fires
+_ML_PROB_THRESHOLD = 0.5  # above this, ML signal fires
 
 SIGNAL_WEIGHTS: dict[str, int] = {
     "large_diff": 25,
@@ -37,7 +37,7 @@ SIGNAL_WEIGHTS: dict[str, int] = {
     "high_author_bug_rate": 20,
     "no_tests": 15,
     "high_dispersion": 10,
-    "ml_model_flag": 20,   # ML probability-based bonus signal
+    "ml_model_flag": 20,  # ML probability-based bonus signal
 }
 
 
@@ -57,8 +57,8 @@ class RiskReport:
 
     score: int  # 0-100, capped
     signals: list[SignalScore] = field(default_factory=list)
-    baseline_prob: float | None = None   # raw ML probability if available
-    codebert_prob: float | None = None   # CodeBERT probability if available
+    baseline_prob: float | None = None  # raw ML probability if available
+    codebert_prob: float | None = None  # CodeBERT probability if available
 
     def triggered_signals(self) -> list[SignalScore]:
         """Return only the signals that fired (triggered=True)."""
@@ -167,7 +167,13 @@ def compute_risk(
             weight=SIGNAL_WEIGHTS["ml_model_flag"],
             triggered=ml_triggered,
             description=(
-                f"ML model probability {ml_prob:.2f} exceeds threshold {_ML_PROB_THRESHOLD}."
+                (
+                    f"ML model probability {ml_prob:.3f} exceeds threshold "
+                    f"{_ML_PROB_THRESHOLD}."
+                    if ml_triggered
+                    else f"ML model probability {ml_prob:.3f} does not exceed "
+                    f"threshold {_ML_PROB_THRESHOLD}."
+                )
                 if ml_prob is not None
                 else "No ML model probability available."
             ),

@@ -4,10 +4,9 @@
 
 export interface Signal {
   name: string;
-  value: number;
   weight: number;
-  weighted: number;
-  raw?: string | number;
+  triggered: boolean;
+  description: string;
 }
 
 export interface Evidence {

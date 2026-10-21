@@ -4,13 +4,16 @@ Usage:
     prscore review <commit-ish> [--repo PATH] [--no-rag] [--no-explain] [--json]
     prscore log [--limit N]
     prscore decide <commit-hash> <score> <decision>
+    prscore install-hook [--repo PATH] [--hook pre-commit|pre-push]
 """
 
 from __future__ import annotations
 
 import json
 import sys
+from contextlib import redirect_stdout
 from pathlib import Path
+from typing import TYPE_CHECKING, Optional
 
 import typer
 from rich.console import Console
@@ -22,7 +25,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import AUDIT_DB_PATH, GROQ_API_KEY, INDEX_DIR, SIMILARITY_THRESHOLD
 from features.schema import CommitFeatures
 from models.risk_engine import RiskReport, compute_risk
-from rag.retrieve import RetrievedEvidence
+
+if TYPE_CHECKING:
+    from rag.retrieve import RetrievedEvidence
 
 app = typer.Typer(
     name="prscore",
@@ -36,37 +41,44 @@ console = Console()
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _try_baseline_prob(features: CommitFeatures) -> float | None:
+
+def _try_baseline_prob(features: CommitFeatures) -> Optional[float]:
     """Attempt to get baseline probability; return None if model not trained yet."""
     try:
         from models.baseline import predict_baseline
+
         return predict_baseline(features, model="rf")
-    except FileNotFoundError:
+    except (FileNotFoundError, ImportError):
         return None
 
 
-def _try_codebert_prob(features: CommitFeatures) -> float | None:
+def _try_codebert_prob(features: CommitFeatures) -> Optional[float]:
     """Attempt to get CodeBERT probability; return None if model not available."""
     try:
         from models.codebert import predict_codebert
+
         return predict_codebert(features)
-    except FileNotFoundError:
+    except (FileNotFoundError, ImportError):
         return None
 
 
-def _try_rag_evidence(features: CommitFeatures) -> RetrievedEvidence | None:
+def _try_rag_evidence(features: CommitFeatures) -> Optional[RetrievedEvidence]:
     """Attempt RAG evidence retrieval; return None if index not built yet."""
     try:
         from rag.retrieve import retrieve_evidence
-        return retrieve_evidence(features, index_dir=str(INDEX_DIR), threshold=SIMILARITY_THRESHOLD)
+
+        return retrieve_evidence(
+            features, index_dir=str(INDEX_DIR), threshold=SIMILARITY_THRESHOLD
+        )
     except Exception:
         return None
 
 
-def _try_explain(report: RiskReport, evidence: RetrievedEvidence | None) -> object | None:
+def _try_explain(report: RiskReport, evidence: Optional[RetrievedEvidence]) -> Optional[object]:
     """Attempt LLM explanation; return None on any failure."""
     try:
         from explain.llm_explain import explain_risk
+
         return explain_risk(report, evidence, groq_api_key=GROQ_API_KEY)
     except Exception:
         return None
@@ -75,14 +87,16 @@ def _try_explain(report: RiskReport, evidence: RetrievedEvidence | None) -> obje
 def _print_report(
     commit_ish: str,
     report: RiskReport,
-    evidence: RetrievedEvidence | None,
-    explanation: object | None,
+    evidence: Optional[RetrievedEvidence],
+    explanation: Optional[object],
     as_json: bool = False,
+    review_id: int | None = None,
 ) -> None:
     """Print a formatted risk report to stdout."""
     if as_json:
         out = report.as_dict()
         out["commit"] = commit_ish
+        out["review_id"] = review_id
         if evidence is not None:
             out["evidence"] = {
                 "commit_hash": evidence.commit_hash,  # type: ignore
@@ -100,9 +114,7 @@ def _print_report(
     score_color = "red" if report.score >= 60 else "yellow" if report.score >= 30 else "green"
     console.print()
     console.rule(f"[bold]PR Risk Scorer — {commit_ish}[/bold]")
-    console.print(
-        f"\n  [bold]Risk Score:[/bold]  [{score_color}]{report.score}/100[/]"
-    )
+    console.print(f"\n  [bold]Risk Score:[/bold]  [{score_color}]{report.score}/100[/]")
 
     if report.baseline_prob is not None:
         console.print(f"  [dim]Baseline (RF) prob:[/dim] {report.baseline_prob:.3f}")
@@ -155,32 +167,76 @@ def _print_report(
 # Commands
 # ---------------------------------------------------------------------------
 
+
 @app.command()
 def review(
     commit_ish: str = typer.Argument(..., help="Commit hash, branch, or 'HEAD' to review."),
     repo: str = typer.Option(".", "--repo", "-r", help="Path to the git repository."),
-    no_rag: bool = typer.Option(False, "--no-rag", help="Skip RAG evidence retrieval."),
-    no_explain: bool = typer.Option(False, "--no-explain", help="Skip LLM explanation."),
-    as_json: bool = typer.Option(False, "--json", help="Output raw JSON."),
+    rag: bool = typer.Option(
+        True, "--rag/--no-rag", help="Use RAG evidence retrieval (default: on)."
+    ),
+    explain: bool = typer.Option(
+        True, "--explain/--no-explain", help="Use LLM explanation (default: on)."
+    ),
+    json_output: bool = typer.Option(False, "--json", help="Output raw JSON."),
 ) -> None:
     """Compute and display the risk score for a single commit."""
     from features.extract import extract_features
 
-    console.print(f"[dim]Extracting features from {repo} @ {commit_ish}...[/dim]")
+    if not json_output:
+        console.print(f"[dim]Extracting features from {repo} @ {commit_ish}...[/dim]")
     try:
         features = extract_features(repo, commit_ish)
     except (ValueError, Exception) as exc:
         console.print(f"[red]Feature extraction failed:[/red] {exc}")
         raise typer.Exit(code=1)
 
-    baseline_prob = _try_baseline_prob(features)
-    codebert_prob = _try_codebert_prob(features)
-    report = compute_risk(features, baseline_prob=baseline_prob, codebert_prob=codebert_prob)
+    def calculate_report() -> tuple[RiskReport, Optional[RetrievedEvidence], Optional[object]]:
+        baseline_prob = _try_baseline_prob(features)
+        codebert_prob = _try_codebert_prob(features)
+        report = compute_risk(features, baseline_prob=baseline_prob, codebert_prob=codebert_prob)
+        evidence = _try_rag_evidence(features) if rag else None
+        explanation = _try_explain(report, evidence) if explain else None
+        return report, evidence, explanation
 
-    evidence = None if no_rag else _try_rag_evidence(features)
-    explanation = None if no_explain else _try_explain(report, evidence)
+    if json_output:
+        with redirect_stdout(sys.stderr):
+            report, evidence, explanation = calculate_report()
+    else:
+        report, evidence, explanation = calculate_report()
 
-    _print_report(commit_ish, report, evidence, explanation, as_json=as_json)
+    from api.audit import insert_review
+
+    evidence_data = (
+        {
+            "commit_hash": evidence.commit_hash,
+            "similarity": evidence.similarity,
+            "summary": evidence.summary,
+        }
+        if evidence is not None
+        else None
+    )
+    review_id = insert_review(
+        db_path=AUDIT_DB_PATH,
+        commit_ref=commit_ish,
+        diff_hash="",
+        score=report.score,
+        signals=report.as_dict()["signals"],
+        evidence=evidence_data,
+        explanation=explanation.text if explanation is not None else "",
+        explanation_source=(explanation.source if explanation is not None else "not_generated"),
+    )
+
+    _print_report(
+        commit_ish,
+        report,
+        evidence,
+        explanation,
+        as_json=json_output,
+        review_id=review_id,
+    )
+    if not json_output:
+        console.print(f"[dim]Review saved to the audit log (review id {review_id}).[/dim]")
 
 
 @app.command()
@@ -243,6 +299,43 @@ def decide(
     except ValueError as exc:
         console.print(f"[red]Error:[/red] {exc}")
         raise typer.Exit(code=1)
+
+
+@app.command(name="install-hook")
+def install_hook(
+    repo: str = typer.Option(".", "--repo", "-r", help="Path to the git repository."),
+    hook: str = typer.Option("pre-push", "--hook", "-H", help="Hook type: pre-push."),
+) -> None:
+    """Install a git hook that runs prscore review on each commit/push."""
+    import stat
+
+    repo_path = Path(repo).resolve()
+    hooks_dir = repo_path / ".git" / "hooks"
+
+    if not hooks_dir.exists():
+        console.print(f"[red]Not a git repository:[/red] {repo_path}")
+        raise typer.Exit(code=1)
+
+    if hook != "pre-push":
+        console.print(f"[red]Unsupported hook type:[/red] {hook}. Use pre-push.")
+        raise typer.Exit(code=1)
+
+    hook_path = hooks_dir / hook
+    if hook_path.exists():
+        console.print(f"[red]Hook already exists at {hook_path}. Refusing to overwrite it.[/red]")
+        console.print(
+            "[dim]Review and merge the prscore hook manually to preserve its behavior.[/dim]"
+        )
+        raise typer.Exit(code=1)
+
+    hook_source = Path(__file__).parent.parent / "scripts" / "git_hook.sh"
+    if not hook_source.is_file():
+        console.print(f"[red]Bundled pre-push hook not found:[/red] {hook_source}")
+        raise typer.Exit(code=1)
+
+    hook_path.write_text(hook_source.read_text())
+    hook_path.chmod(hook_path.stat().st_mode | stat.S_IEXEC)
+    console.print(f"[green]✓ Installed {hook} hook at {hook_path}[/green]")
 
 
 def main() -> None:

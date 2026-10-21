@@ -16,6 +16,12 @@ export default function ReviewDetail({ review, onDecisionMade }: Props) {
 
   const level = riskLevel(review.score);
   const color = riskColor(level);
+  const signalDescription = (name: string, triggered: boolean, description: string) => {
+    if (name !== 'ml_model_flag') return description;
+    return triggered
+      ? 'The model probability crossed its configured threshold.'
+      : 'No model probability crossed its configured threshold.';
+  };
 
   async function handleDecision(decision: DecisionType) {
     setSubmitting(decision);
@@ -68,18 +74,21 @@ export default function ReviewDetail({ review, onDecisionMade }: Props) {
                     {sig.name.replace(/_/g, ' ')}
                   </span>
                   <span className="text-xs font-mono text-surface-400">
-                    {sig.weighted.toFixed(1)} / {(sig.weight * 100).toFixed(0)}
+                    {sig.triggered ? sig.weight : 0} / {sig.weight} pts
                   </span>
                 </div>
                 <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
-                      width: `${Math.min((sig.value / 1) * 100, 100)}%`,
+                      width: sig.triggered ? '100%' : '0%',
                       background: `linear-gradient(90deg, ${color}80, ${color})`,
                     }}
                   />
                 </div>
+                <p className="text-xs text-surface-500 mt-1">
+                  {signalDescription(sig.name, sig.triggered, sig.description)}
+                </p>
               </div>
             </div>
           ))}
@@ -87,26 +96,32 @@ export default function ReviewDetail({ review, onDecisionMade }: Props) {
       </div>
 
       {/* Evidence */}
-      {review.evidence && (
-        <div className="glass-panel p-4 rounded-xl">
-          <h3 className="text-xs uppercase tracking-widest text-surface-400 mb-2">
-            RAG Evidence
-          </h3>
-          <p className="text-sm text-surface-200 font-mono mb-1">
-            {review.evidence.commit_hash.slice(0, 10)}
-            <span className="text-surface-500 ml-2">
-              sim: {(review.evidence.similarity * 100).toFixed(1)}%
-            </span>
+      <div className="glass-panel p-4 rounded-xl">
+        <h3 className="text-xs uppercase tracking-widest text-surface-400 mb-2">
+          RAG Evidence
+        </h3>
+        {review.evidence ? (
+          <>
+            <p className="text-sm text-surface-200 font-mono mb-1">
+              {review.evidence.commit_hash.slice(0, 10)}
+              <span className="text-surface-500 ml-2">
+                sim: {(review.evidence.similarity * 100).toFixed(1)}%
+              </span>
+            </p>
+            <p className="text-xs text-surface-400">{review.evidence.summary}</p>
+          </>
+        ) : (
+          <p className="text-sm text-surface-400">
+            No close historical match was found in the available RAG index.
           </p>
-          <p className="text-xs text-surface-400">{review.evidence.summary}</p>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Explanation */}
       {review.explanation && (
         <div className="glass-panel p-4 rounded-xl">
           <h3 className="text-xs uppercase tracking-widest text-surface-400 mb-2">
-            Explanation
+            Explanation · {review.explanation_source.replace(/_/g, ' ')}
           </h3>
           <p className="text-sm text-surface-200 leading-relaxed whitespace-pre-wrap">
             {review.explanation}
