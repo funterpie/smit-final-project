@@ -160,7 +160,7 @@ npm --prefix dashboard run build
 
 | Credit | Attribution |
 |---|---|
-| Project author | [@funterpie](https://github.com/funterpie) |
+| Project author | [@funterpie](https://github.com/funterpie)  Muhammad Taha Sattar arain|
 | Project | PR Risk Scorer — SMIT Batch 10 Final Year Project |
 | Evaluation dataset | [ApacheJIT](https://arxiv.org/abs/2203.00101) |
 | Core methods and tools | PyDriller, scikit-learn, CodeBERT, FAISS, FastAPI, React, and SQLite |
