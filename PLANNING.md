@@ -1,9 +1,9 @@
-# Well, honestly, I didn't work on this plan
+# Well, honestly, I didn't worked on this plan
 
 
 # PLANNING.md — PR Risk Scorer
 
-Solo build · ~50-60 hours · Ubuntu dev machine · Colab free tier · deadline soft ~1 month (extendable if results are strong)
+Solo build · ~50-60 hours · Ubuntu dev machine · Colab paid  · deadline soft ~1 month (extendable if results are strong)
 
 ## Week 1 — Data & baseline (~14 hrs)
 - Download ApacheJIT, understand commit structure + labels
