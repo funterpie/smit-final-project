@@ -154,11 +154,10 @@ make format   # black
 Install the pre-push hook to automatically score commits before pushing:
 
 ```bash
-cp scripts/git_hook.sh .git/hooks/pre-push
-chmod +x .git/hooks/pre-push
+prscore install-hook --repo . --hook pre-push
 ```
 
-The hook runs `prscore review` on each commit being pushed. If any commit scores ≥ 60, the push is blocked. Override with `git push --no-verify`.
+The installer refuses to overwrite an existing pre-push hook. The hook scores the commits being pushed and blocks if scoring fails or if any commit reaches the configured risk threshold. Configure the threshold via `RISK_THRESHOLD` (default: 60). Review the hook source before installation.
 
 Configure the threshold via the `RISK_THRESHOLD` environment variable (default: 60).
 
@@ -228,3 +227,62 @@ The LLM explanation layer uses [Groq](https://groq.com) (free tier). To enable i
    ```
 
 Without a key, `prscore` gracefully falls back to a locally-generated explanation (no API call made).
+
+## Run the dashboard and demo
+
+Run these commands from the project root. The demo database is isolated from
+the normal audit database:
+
+```bash
+PRSCORER_DEMO_DB=demo/demo.db make demo
+AUDIT_DB_PATH=demo/demo.db GROQ_API_KEY= .venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8000
+```
+
+In a second terminal, start the frontend:
+
+```bash
+npm --prefix dashboard ci
+npm --prefix dashboard run dev -- --host 127.0.0.1
+```
+
+Open <http://127.0.0.1:5173/>. Select a review to inspect its score, risk
+signals, evidence, explanation source, and decision controls. The demo cases
+are synthetic Git commits scored by the real CLI pipeline.
+
+### Architecture at a glance
+
+```text
+Git commit → PyDriller features → heuristic + optional LR/RF/CodeBERT risk
+            → thresholded FAISS evidence → Groq/local explanation
+            → FastAPI → React dashboard → SQLite review and human decision audit
+```
+
+Raw diffs remain local and are not sent to Groq. Groq receives derived score
+metadata and retrieved evidence summary only.
+
+### Install the optional pre-push hook
+
+```bash
+prscore install-hook --repo . --hook pre-push
+```
+
+The installer refuses to overwrite an existing hook. The hook blocks if risk
+scoring fails or any pushed commit reaches `RISK_THRESHOLD` (default 60).
+
+### Troubleshooting and limitations
+
+- If port 8000 or 5173 is occupied, stop the existing project process or choose
+  another port and update the dashboard API configuration accordingly.
+- If the dashboard says API disconnected, check the backend at
+  <http://127.0.0.1:8000/health> and confirm both processes use the intended
+  demo database setup.
+- “No close historical match” means no indexed result met the configured RAG
+  similarity threshold; the score and review can still be used.
+- The live author bug-rate feature is currently a zero placeholder. Scores are
+  triage signals and have not been calibrated for every repository.
+- Groq requires a valid key and network access. Without it the local
+  explanation fallback is used; retrieval also requires the local index and
+  embedding model to be available.
+
+See [`submission/RESULTS.md`](submission/RESULTS.md) for the evaluation
+definitions, intervals, and limitations.
