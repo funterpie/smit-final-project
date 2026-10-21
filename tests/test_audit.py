@@ -4,6 +4,7 @@ Updated to match the two-table schema (reviews + decisions).
 """
 
 import pytest
+import sqlite3
 from pathlib import Path
 
 from api.audit import (
@@ -61,6 +62,28 @@ class TestInsertReview:
         assert review["commit_ref"] == "abc1234"
         assert review["score"] == 60
         assert review["explanation"] == "Test explanation"
+
+    def test_fallback_reason_round_trips(self, db: Path) -> None:
+        rid = insert_review(
+            db, "fallback-case", "", 20, [], None, "Local text", "local_fallback",
+            fallback_reason="Groq request failed (BadRequestError)",
+        )
+        assert get_review(db, rid)["fallback_reason"] == "Groq request failed (BadRequestError)"
+
+    def test_old_reviews_table_migrates_without_losing_rows(self, db: Path) -> None:
+        with sqlite3.connect(db) as conn:
+            conn.execute("""CREATE TABLE reviews (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT NOT NULL,
+                commit_ref TEXT NOT NULL, diff_hash TEXT NOT NULL DEFAULT '',
+                score INTEGER NOT NULL, signals_json TEXT NOT NULL DEFAULT '[]',
+                evidence_json TEXT, explanation TEXT NOT NULL DEFAULT '',
+                explanation_source TEXT NOT NULL DEFAULT 'local_fallback'
+            )""")
+            conn.execute("INSERT INTO reviews(timestamp, commit_ref, score) VALUES ('old', 'old-row', 12)")
+        row = get_review(db, 1)
+        assert row is not None
+        assert row["commit_ref"] == "old-row"
+        assert row["fallback_reason"] is None
 
     def test_review_signals_parsed(self, db: Path) -> None:
         rid = _insert_dummy_review(db)

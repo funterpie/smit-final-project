@@ -104,13 +104,13 @@ def _try_rag(features: CommitFeatures) -> dict[str, Any] | None:
 
 def _try_explain(
     report: object, evidence: dict[str, Any] | None
-) -> dict[str, str] | None:
+) -> dict[str, str | None] | None:
     try:
         from explain.llm_explain import explain_risk
         from rag.retrieve import RetrievedEvidence
         ev_obj = RetrievedEvidence(**evidence) if evidence else None
         expl = explain_risk(report, ev_obj, groq_api_key=GROQ_API_KEY)  # type: ignore
-        return {"text": expl.text, "source": expl.source}
+        return {"text": expl.text, "source": expl.source, "fallback_reason": expl.fallback_reason}
     except Exception:
         return None
 
@@ -150,7 +150,8 @@ def review(req: ReviewRequest) -> dict[str, Any]:
 
     diff_h = _diff_hash(req.diff_text)
     explanation_text = explanation["text"] if explanation else ""
-    explanation_source = explanation["source"] if explanation else "local_fallback"
+    explanation_source = explanation["source"] if explanation else "not_generated"
+    fallback_reason = explanation["fallback_reason"] if explanation else None
 
     # Persist to SQLite
     review_id = insert_review(
@@ -162,6 +163,7 @@ def review(req: ReviewRequest) -> dict[str, Any]:
         evidence=evidence,
         explanation=explanation_text,
         explanation_source=explanation_source,
+        fallback_reason=fallback_reason,
     )
 
     return {
@@ -171,6 +173,7 @@ def review(req: ReviewRequest) -> dict[str, Any]:
         "evidence": evidence,
         "explanation": explanation_text,
         "explanation_source": explanation_source,
+        "fallback_reason": fallback_reason,
     }
 
 

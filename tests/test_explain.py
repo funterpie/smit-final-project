@@ -1,6 +1,8 @@
 """tests/test_explain.py — Tests for explain/llm_explain.py."""
 
 import pytest
+from types import SimpleNamespace
+from unittest.mock import Mock
 
 from features.schema import CommitFeatures
 from models.risk_engine import compute_risk, RiskReport
@@ -61,9 +63,25 @@ class TestExplainRisk:
         assert result.source == "local_fallback"
         assert len(result.text) > 10
 
-    def test_bad_key_uses_local_fallback(self) -> None:
-        """A bad Groq API key should trigger exception → local fallback, not crash."""
+    def test_groq_exception_uses_fallback_and_does_not_log_key(self, monkeypatch, caplog) -> None:
+        """Groq diagnostics are logged with secrets removed from the full error text."""
+        import groq
+
         report = _make_report()
-        result = explain_risk(report, evidence=None, groq_api_key="bad-key-xyz")
+        secret = "test-secret-groq-key"
+        create = Mock(side_effect=RuntimeError(f"BadRequestError: retired model, key={secret}"))
+        client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+        monkeypatch.setattr(groq, "Groq", lambda api_key: client)
+        result = explain_risk(report, evidence=None, groq_api_key=secret)
         assert isinstance(result, Explanation)
         assert result.source == "local_fallback"
+        assert result.fallback_reason == "Groq request failed (RuntimeError)"
+        assert "BadRequestError: retired model" in caplog.text
+        assert secret not in caplog.text
+        assert "[Groq API unavailable" not in result.text
+
+    def test_local_fallback_text_has_no_error_prefix(self) -> None:
+        result = explain_risk(_make_report(), groq_api_key="")
+        assert "[Groq API unavailable" not in result.text
+        assert result.source == "local_fallback"
+        assert result.fallback_reason

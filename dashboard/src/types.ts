@@ -25,6 +25,7 @@ export interface Review {
   evidence: Evidence | null;
   explanation: string;
   explanation_source: string;
+  fallback_reason: string | null;
   decision: string | null;
 }
 

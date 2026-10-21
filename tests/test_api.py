@@ -94,6 +94,7 @@ class TestReview:
         assert resp.status_code == 200
         data = resp.json()
         assert data["explanation_source"] in ("groq", "local_fallback")
+        assert "fallback_reason" in data
 
 
 # ---------------------------------------------------------------------------

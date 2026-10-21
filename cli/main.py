@@ -107,6 +107,7 @@ def _print_report(
             out["explanation"] = {
                 "text": explanation.text,  # type: ignore
                 "source": explanation.source,  # type: ignore
+                "fallback_reason": explanation.fallback_reason,  # type: ignore
             }
         console.print_json(json.dumps(out))
         return
@@ -225,6 +226,7 @@ def review(
         evidence=evidence_data,
         explanation=explanation.text if explanation is not None else "",
         explanation_source=(explanation.source if explanation is not None else "not_generated"),
+        fallback_reason=(explanation.fallback_reason if explanation is not None else None),
     )
 
     _print_report(

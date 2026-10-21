@@ -11,12 +11,15 @@ Raw commit diffs are never sent.
 from __future__ import annotations
 
 import os
+import logging
 from dataclasses import dataclass
 from typing import Any
 
 
-GROQ_MODEL = "openai/gpt-oss-20b"
-MAX_COMPLETION_TOKENS = 256
+from config import GROQ_MODEL
+
+logger = logging.getLogger(__name__)
+MAX_COMPLETION_TOKENS = 600
 
 
 @dataclass(frozen=True)
@@ -25,6 +28,7 @@ class Explanation:
 
     text: str
     source: str
+    fallback_reason: str | None = None
 
 
 def _get_signals(report: Any) -> list[Any]:
@@ -201,6 +205,7 @@ Return an explanation with the overall risk, key factors, and recommended action
         model=GROQ_MODEL,
         messages=[{"role": "user", "content": prompt}],
         max_completion_tokens=MAX_COMPLETION_TOKENS,
+        reasoning_effort="low",
     )
 
     content = response.choices[0].message.content
@@ -223,6 +228,7 @@ def explain_risk(
         return Explanation(
             text=_local_fallback(report, evidence),
             source="local_fallback",
+            fallback_reason="Groq API key is not configured",
         )
 
     try:
@@ -233,9 +239,18 @@ def explain_risk(
         )
         return Explanation(text=text, source="groq")
 
-    except Exception:
-        # Keep the application operational if Groq is unavailable.
+    except Exception as exc:
+        # Preserve useful diagnostics while ensuring the API key never enters logs.
+        message = str(exc)
+        if api_key:
+            message = message.replace(api_key, "[REDACTED]")
+        logger.warning("Groq explanation failed: %s", message)
         return Explanation(
             text=_local_fallback(report, evidence),
             source="local_fallback",
+            fallback_reason=(
+                "Groq returned an empty explanation"
+                if isinstance(exc, ValueError) and "empty explanation" in str(exc).lower()
+                else f"Groq request failed ({type(exc).__name__})"
+            ),
         )

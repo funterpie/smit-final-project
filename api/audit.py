@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS reviews (
     signals_json       TEXT    NOT NULL DEFAULT '[]',
     evidence_json      TEXT,
     explanation        TEXT    NOT NULL DEFAULT '',
-    explanation_source TEXT    NOT NULL DEFAULT 'local_fallback'
+    explanation_source TEXT    NOT NULL DEFAULT 'local_fallback',
+    fallback_reason   TEXT
 );
 """
 
@@ -74,6 +75,9 @@ def _connect(db_path: Path) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute(_CREATE_REVIEWS_SQL)
+    review_cols = [row["name"] for row in conn.execute("PRAGMA table_info(reviews)").fetchall()]
+    if "fallback_reason" not in review_cols:
+        conn.execute("ALTER TABLE reviews ADD COLUMN fallback_reason TEXT")
     # Check if old decisions table exists (without review_id) and drop it
     cursor = conn.execute("PRAGMA table_info(decisions)")
     cols = [row["name"] for row in cursor.fetchall()]
@@ -96,6 +100,7 @@ def insert_review(
     evidence: dict[str, Any] | None,
     explanation: str,
     explanation_source: str,
+    fallback_reason: str | None = None,
 ) -> int:
     """Insert a review result. Returns the row id."""
     timestamp = datetime.now(timezone.utc).isoformat()
@@ -104,8 +109,8 @@ def insert_review(
         cursor = conn.execute(
             "INSERT INTO reviews "
             "(timestamp, commit_ref, diff_hash, score, signals_json, "
-            " evidence_json, explanation, explanation_source) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            " evidence_json, explanation, explanation_source, fallback_reason) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 timestamp,
                 commit_ref,
@@ -115,6 +120,7 @@ def insert_review(
                 json.dumps(evidence) if evidence else None,
                 explanation,
                 explanation_source,
+                fallback_reason,
             ),
         )
         conn.commit()

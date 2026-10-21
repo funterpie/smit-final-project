@@ -39,6 +39,7 @@ AUDIT_DB_PATH: Path = Path(
 # Secrets
 # ---------------------------------------------------------------------------
 GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")  # empty → local fallback
+GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 # ---------------------------------------------------------------------------
 # Model / retrieval settings

@@ -52,11 +52,6 @@ export default function ReviewDetail({ review, onDecisionMade }: Props) {
           <p className="text-xs text-surface-400 font-mono">
             Reviewed {new Date(review.timestamp).toLocaleString()}
           </p>
-          {review.explanation_source && (
-            <p className="text-xs text-surface-500 mt-1">
-              Explanation: <span className="text-surface-300">{review.explanation_source}</span>
-            </p>
-          )}
         </div>
       </div>
 
@@ -120,9 +115,20 @@ export default function ReviewDetail({ review, onDecisionMade }: Props) {
       {/* Explanation */}
       {review.explanation && (
         <div className="glass-panel p-4 rounded-xl">
-          <h3 className="text-xs uppercase tracking-widest text-surface-400 mb-2">
-            Explanation · {review.explanation_source.replace(/_/g, ' ')}
-          </h3>
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-xs uppercase tracking-widest text-surface-400">
+              Explanation
+            </h3>
+            {review.explanation_source !== 'not_generated' && (
+              <span
+                title={review.explanation_source === 'local_fallback' ? review.fallback_reason ?? undefined : undefined}
+                aria-label={review.fallback_reason ?? undefined}
+                className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[10px] normal-case tracking-normal text-surface-400"
+              >
+                {review.explanation_source === 'groq' ? 'Groq' : 'Local fallback'}
+              </span>
+            )}
+          </div>
           <p className="text-sm text-surface-200 leading-relaxed whitespace-pre-wrap">
             {review.explanation}
           </p>
