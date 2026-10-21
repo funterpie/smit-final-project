@@ -1,7 +1,11 @@
-# requirements-ml.txt — heavy ML dependencies (install separately on Colab / GPU machine)
-# CPU-only torch to keep image size manageable on the dev machine
-torch==2.3.0+cpu
-transformers==4.41.2
-faiss-cpu==1.8.0
-langchain==0.2.5
-langchain-groq==0.1.6
+# requirements-ml.txt — heavy ML dependencies for model training / inference
+# Install separately: pip install -r requirements-ml.txt
+#
+# For GPU (Colab): pip install torch transformers
+# For CPU-only dev: pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+torch>=2.0.0
+transformers>=4.30.0
+faiss-cpu>=1.8.0
+sentence-transformers>=2.2.0
+groq>=0.5.0

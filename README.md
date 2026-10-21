@@ -123,7 +123,7 @@ Example output:
 
 ```bash
 prscore decide <commit-hash> <score> approve
-prscore decide <commit-hash> <score> escalate -e "Needs senior review"
+prscore decide <commit-hash> <score> escalate -n "Needs senior review"
 prscore log --limit 10
 ```
 

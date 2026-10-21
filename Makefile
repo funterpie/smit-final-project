@@ -1,7 +1,8 @@
 .PHONY: install test lint format
 
 install:
-	pip install -e ".[dev]" -r requirements-dev.txt
+	pip install -e . -r requirements.txt
+	pip install -r requirements-dev.txt
 
 test:
 	pytest tests/ -v

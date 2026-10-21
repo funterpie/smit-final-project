@@ -1,4 +1,5 @@
 # .gitignore — PR Risk Scorer
+# ============================================================
 
 # --- Python ---
 __pycache__/
@@ -16,12 +17,12 @@ venv/
 env/
 .python-version
 
-# --- Environment ---
+# --- Environment secrets ---
 .env
 
 # --- Data & model artefacts (never commit large binaries) ---
-data/raw/*
-data/processed/*
+data/raw/
+data/processed/
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 models/artefacts/
@@ -29,8 +30,10 @@ models/artefacts/
 *.pt
 *.pth
 *.pkl
+*.joblib
 *.onnx
 *.zip
+*.h5
 
 # --- FAISS index ---
 rag/index/
@@ -55,9 +58,12 @@ dashboard/dist/
 dashboard/.next/
 dashboard/node_modules/
 
+# --- Jupyter ---
+.ipynb_checkpoints/
+Untitled*.ipynb
+
 # --- PyInstaller ---
 *.spec
-dist/
 
 # --- pytest / coverage ---
 .pytest_cache/
@@ -66,6 +72,12 @@ htmlcov/
 
 # --- mypy ---
 .mypy_cache/
-.venv/
-__pycache__/
-.env
+
+# --- Scratch / planning files that should never be in the repo ---
+Planing/
+Planing.zip
+pr-risk-scorer-package/
+pr-risk-scorer-package.zip
+work on db/
+guide.html
+codebert_best_model.zip

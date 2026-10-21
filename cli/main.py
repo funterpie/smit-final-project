@@ -208,8 +208,8 @@ def log(
         table.add_row(
             str(row["id"]),
             str(row["timestamp"])[:19],
-            str(row["commit_hash"])[:12],
-            str(row["score"]),
+            str(row.get("commit_ref", row.get("commit_hash", "")))[:12],
+            str(row.get("score", "")),
             f"[{color}]{dec}[/{color}]",
         )
     console.print(table)
@@ -220,13 +220,25 @@ def decide(
     commit_hash: str = typer.Argument(..., help="Commit hash being reviewed."),
     score: int = typer.Argument(..., help="Risk score (0-100)."),
     decision: str = typer.Argument(..., help="approve | request_changes | escalate"),
-    explanation: str = typer.Option("", "--explanation", "-e", help="Optional explanation text."),
+    note: str = typer.Option("", "--note", "-n", help="Optional reviewer note."),
 ) -> None:
     """Log a human reviewer decision to the audit database."""
-    from api.audit import insert_decision
+    from api.audit import insert_decision, insert_review, list_reviews
 
     try:
-        row_id = insert_decision(AUDIT_DB_PATH, commit_hash, score, decision, explanation)
+        # Find the most recent review for this commit, or create a stub
+        existing = list_reviews(AUDIT_DB_PATH)
+        review_id = None
+        for r in existing:
+            if r["commit_ref"] == commit_hash:
+                review_id = r["id"]
+                break
+        if review_id is None:
+            review_id = insert_review(
+                AUDIT_DB_PATH, commit_hash, "", score, [], None, "", "local_fallback"
+            )
+
+        row_id = insert_decision(AUDIT_DB_PATH, review_id, decision, note)
         console.print(f"[green]✓ Decision logged[/green] (row id={row_id})")
     except ValueError as exc:
         console.print(f"[red]Error:[/red] {exc}")
