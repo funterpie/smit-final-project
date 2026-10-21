@@ -1,288 +1,166 @@
 # PR Risk Scorer
 
-![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
-![License: MIT](https://img.shields.io/badge/license-MIT-green)
-![Platform: Linux](https://img.shields.io/badge/platform-Linux-lightgrey)
+**A just-in-time defect-risk triage tool for Git commits.** PR Risk Scorer extracts change-level features, calculates an interpretable score, optionally retrieves similar historical commits, and provides an explanation with a human review workflow.
 
-**Just-in-time (JIT) software defect prediction**: given a Git commit, output a weighted risk score (0–100), similar past bug-inducing commits (RAG evidence), a plain-English explanation, and a logged human decision.
+The score helps reviewers prioritize attention. It is not a guarantee that a commit contains a defect, and it does not make merge decisions.
 
-See [`IDEA.md`](IDEA.md) for the full rationale, [`PLANNING.md`](PLANNING.md) for the build plan, and [`AGENTS.md`](AGENTS.md) for AI agent conventions.
+> **FYP project:** SMIT Batch 10
 
----
+## Features
 
-## Model Comparison Results
+- **Commit analysis:** extract change size, file dispersion, test-file and sensitive-path indicators, and other structured features.
+- **Risk scoring:** combine named heuristic signals with available Logistic Regression, Random Forest, and CodeBERT model outputs.
+- **Historical context:** search a local FAISS index and show a match only when it meets the configured similarity threshold.
+- **Explanations:** use Groq with derived risk metadata and retrieved evidence, or fall back to a local explanation. Raw code diffs are not sent to Groq.
+- **Review audit:** inspect reviews in a React dashboard and record approve, request-changes, or escalate decisions in SQLite.
+- **CLI, API, and demo:** run a review from the command line, use the FastAPI service, or try the reproducible synthetic demo cases.
 
-Evaluated on 1,200 test commits (26.5% positive rate) from the ApacheJIT dataset.
+## Evaluation snapshot
+
+The checked-in evaluation artifacts report results on 1,200 test commits, with a 26.5% positive rate.
 
 | Model | AUC-ROC | AUC-PR | Recall@20% | FPR@0.5 |
-|---------------|---------|--------|------------|---------|
+|---|---:|---:|---:|---:|
 | Heuristic | 0.6345 | 0.3785 | 0.3711 | 0.1224 |
-| Baseline LR | 0.6878 | 0.4520 | 0.3365 | 0.2846 |
-| Baseline RF | 0.7423 | 0.5110 | 0.4182 | **0.1020** |
-| **CodeBERT** | **0.7604** | **0.5314** | **0.4245** | 0.1281 |
+| Logistic Regression | 0.6878 | 0.4520 | 0.3365 | 0.2846 |
+| Random Forest | 0.7423 | 0.5110 | 0.4182 | **0.1020** |
+| CodeBERT | **0.7604** | **0.5314** | **0.4245** | 0.1281 |
 
-**Key takeaway**: CodeBERT achieves the best AUC-ROC/AUC-PR, while Random Forest has the lowest false positive rate. See [`docs/eval_report.md`](docs/eval_report.md) for the full analysis.
+The available bootstrap intervals cover AUC-PR and Recall@20% only. The stored analysis does not test paired differences between models, so these point estimates do not establish that CodeBERT significantly outperforms Random Forest. See [submission/RESULTS.md](submission/RESULTS.md) and [docs/eval_report.md](docs/eval_report.md) for definitions, intervals, and interpretation.
 
----
+## Quick start
 
-## Quickstart
+### Requirements
 
-### 1. Clone & create virtual environment
+- Python 3.11 or newer
+- Node.js and npm for the dashboard
+- Git
+
+### Install and configure
 
 ```bash
-git clone <repo-url>
-cd pr-risk-scorer
-python3.11 -m venv .venv
+git clone https://github.com/funterpie/smit-final-project.git
+cd smit-final-project
+python3 -m venv .venv
 source .venv/bin/activate
-```
-
-### 2. Install dependencies
-
-```bash
-make install                         # core runtime deps (pip install -e . + requirements.txt)
-pip install -r requirements-dev.txt  # dev tools: pytest, black, ruff, mypy
-pip install -r requirements-ml.txt   # ML: scikit-learn, torch, transformers, faiss-cpu, etc.
-```
-
-### 3. Configure environment
-
-```bash
+make install
 cp .env.example .env
-# Edit .env to set your GROQ_API_KEY (optional — local fallback works without it)
 ```
 
-### 4. Prepare the dataset & train models
+Set `GROQ_API_KEY` in `.env` to enable Groq explanations. Leave it empty to use the local fallback. The `.env` file contains private configuration and must not be committed.
 
-```bash
-# Download and process the ApacheJIT dataset (one-time)
-python scripts/prepare_dataset.py --sample 6000
-
-# Train baseline models (Logistic Regression + Random Forest)
-python scripts/train_baseline.py
-
-# Build RAG index (embeds bug-inducing commits into FAISS)
-python scripts/build_rag_index.py
-```
-
-### 5. (Optional) Fine-tune CodeBERT on Google Colab
-
-Open [`notebooks/codebert_finetune.ipynb`](notebooks/codebert_finetune.ipynb) on Google Colab (free tier GPU). Upload the trained model to `models/artefacts/codebert/best_model/`.
-
-### 6. Run the evaluation
-
-```bash
-python eval/evaluate.py --test-csv data/processed/test_features.csv --codebert
-# Results saved to eval/results.json
-```
-
----
-
-## Usage
-
-### CLI — score a commit
+### Review a commit
 
 ```bash
 prscore review HEAD
-prscore review <commit-sha>
-prscore review main --repo /path/to/other/repo
-prscore review HEAD --json           # raw JSON output
-prscore review HEAD --no-rag         # skip RAG evidence
-prscore review HEAD --no-explain     # skip LLM explanation
+prscore review HEAD --json --no-rag
+prscore review HEAD --no-explain
 ```
 
-Example output:
-
-```
-──────────── PR Risk Scorer — HEAD ────────────
-
-  Risk Score:  35/100
-
-  Signal Breakdown
-  ┌───────────────────────────┬────────┬───────────┬──────────────────────────────────────┐
-  │ Signal                    │ Weight │ Triggered │ Description                          │
-  ├───────────────────────────┼────────┼───────────┼──────────────────────────────────────┤
-  │ large_diff                │ 25     │ ✗         │ Diff has 80 lines changed (>300)      │
-  │ touches_sensitive_module  │ 30     │ ✗         │ …                                    │
-  │ high_author_bug_rate      │ 20     │ ✗         │ …                                    │
-  │ no_tests                  │ 15     │ ✓         │ No test files added or modified.      │
-  │ high_dispersion           │ 10     │ ✓         │ Dispersion 3.5 (>3.0)                │
-  │ ml_model_flag             │ 20     │ ✓         │ ML model prob 0.62 exceeds 0.5.      │
-  └───────────────────────────┴────────┴───────────┴──────────────────────────────────────┘
-
-  📎 Similar past bug commit (similarity=0.87)
-    apache/kafka | +423/-89 lines | 12 files | dispersion=4.21
-
-  ┌─ LLM Explanation [groq] ───────────────────────────┐
-  │ This commit touches 3 files with moderate risk...   │
-  └─────────────────────────────────────────────────────┘
-
-  ⚠ Human decision required: run `prscore decide` to log your review.
-```
-
-### CLI — log and view decisions
+Each review is saved to the configured SQLite audit database. JSON output includes the review ID. To record a decision from the CLI:
 
 ```bash
-prscore decide <commit-hash> <score> approve
-prscore decide <commit-hash> <score> escalate -n "Needs senior review"
+prscore decide <commit-sha> <score> approve
+prscore decide <commit-sha> <score> request_changes --note "Add a regression test"
+prscore decide <commit-sha> <score> escalate --note "Needs security review"
 prscore log --limit 10
 ```
 
-### API — FastAPI backend
+For command details, run `prscore --help` or `prscore review --help`.
+
+## Run the dashboard
+
+Start the API from the project root:
 
 ```bash
-uvicorn api.main:app --reload --port 8000
-# Endpoints: POST /review, GET /decisions, POST /decisions, GET /health
+.venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8000
 ```
 
-### Run tests
-
-```bash
-make test
-```
-
-### Lint + format
-
-```bash
-make lint     # ruff check
-make format   # black
-```
-
----
-
-## Git Hook — Pre-Push Risk Check
-
-Install the pre-push hook to automatically score commits before pushing:
-
-```bash
-prscore install-hook --repo . --hook pre-push
-```
-
-The installer refuses to overwrite an existing pre-push hook. The hook scores the commits being pushed and blocks if scoring fails or if any commit reaches the configured risk threshold. Configure the threshold via `RISK_THRESHOLD` (default: 60). Review the hook source before installation.
-
-Configure the threshold via the `RISK_THRESHOLD` environment variable (default: 60).
-
----
-
-## Project Structure
-
-```
-config.py              Central settings loader (reads .env)
-features/
-  schema.py            CommitFeatures pydantic model
-  extract.py           PyDriller-based feature extraction
-models/
-  risk_engine.py       Weighted signal combiner (heuristic + ML blend)
-  baseline.py          Logistic regression + random forest (sklearn)
-  codebert.py          CodeBERT fine-tuning (Colab) + inference
-rag/
-  build_index.py       FAISS index builder (sentence-transformers)
-  retrieve.py          Similarity search with threshold (returns None below threshold)
-explain/
-  llm_explain.py       Groq LLM explanation layer + local fallback
-cli/
-  main.py              prscore CLI entry point (typer + rich)
-api/
-  main.py              FastAPI backend (review, decisions, health)
-  audit.py             SQLite audit log (decisions table)
-eval/
-  evaluate.py          AUC-PR, recall@20%, FPR evaluation
-  results.json         Latest evaluation results
-scripts/
-  prepare_dataset.py   ApacheJIT → processed feature CSVs
-  train_baseline.py    Train LR + RF baselines
-  build_rag_index.py   Embed bug commits → FAISS index
-  git_hook.sh          Pre-push git hook
-notebooks/
-  codebert_finetune.ipynb   Colab fine-tuning notebook
-docs/
-  eval_report.md       Full evaluation report with analysis
-data/
-  raw/                 ApacheJIT dataset
-  processed/           Train/test CSVs + bug-inducing JSONL
-tests/                 pytest suite
-```
-
----
-
-## Design Decisions
-
-- **No hardcoded paths** — everything through `config.py` / `.env`.
-- **LLM never sees the raw diff** — only computed signals + RAG evidence (privacy + hallucination control).
-- **RAG returns `None` below the similarity threshold** — no forced top-k results.
-- **GPU training on Colab free tier** — scripts support checkpoint resume for disconnects.
-- **Groq API is the only cloud call** — scoring + retrieval are fully local/offline.
-- **Baseline vs CodeBERT comparison is the core evaluation result** — neither is removed.
-
----
-
-## Groq API Key Setup
-
-The LLM explanation layer uses [Groq](https://groq.com) (free tier). To enable it:
-
-1. Sign up at [console.groq.com](https://console.groq.com)
-2. Create an API key
-3. Add to your `.env` file:
-   ```
-   GROQ_API_KEY=gsk_your_api_key_here
-   ```
-
-Without a key, `prscore` gracefully falls back to a locally-generated explanation (no API call made).
-
-## Run the dashboard and demo
-
-Run these commands from the project root. The demo database is isolated from
-the normal audit database:
-
-```bash
-PRSCORER_DEMO_DB=demo/demo.db make demo
-AUDIT_DB_PATH=demo/demo.db GROQ_API_KEY= .venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8000
-```
-
-In a second terminal, start the frontend:
+In a second terminal, install the dashboard dependencies and start Vite:
 
 ```bash
 npm --prefix dashboard ci
 npm --prefix dashboard run dev -- --host 127.0.0.1
 ```
 
-Open <http://127.0.0.1:5173/>. Select a review to inspect its score, risk
-signals, evidence, explanation source, and decision controls. The demo cases
-are synthetic Git commits scored by the real CLI pipeline.
+Open [http://127.0.0.1:5173/](http://127.0.0.1:5173/). Check API status at [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health). Available API routes include `GET /health`, `POST /review`, `GET /reviews`, `POST /decisions`, `GET /audit`, and `GET /metrics`.
 
-### Architecture at a glance
+## Run the demo
 
-```text
-Git commit → PyDriller features → heuristic + optional LR/RF/CodeBERT risk
-            → thresholded FAISS evidence → Groq/local explanation
-            → FastAPI → React dashboard → SQLite review and human decision audit
+The demo creates temporary Git repositories for three synthetic risk cases and a no-close-RAG-match case. It scores them through the real CLI pipeline and writes outputs and review records to the demo database.
+
+```bash
+PRSCORER_DEMO_DB=demo/demo.db make demo
 ```
 
-Raw diffs remain local and are not sent to Groq. Groq receives derived score
-metadata and retrieved evidence summary only.
+Then start the API with that same database:
 
-### Install the optional pre-push hook
+```bash
+AUDIT_DB_PATH=demo/demo.db GROQ_API_KEY= .venv/bin/uvicorn api.main:app --host 127.0.0.1 --port 8000
+```
+
+Start the dashboard as described above and open [http://127.0.0.1:5173/](http://127.0.0.1:5173/). Demo cases and outputs are in [demo/](demo/README.md). Use a separate path for demo data to keep it isolated from the default audit database.
+
+## Architecture
+
+```text
+Git commit
+    ↓
+PyDriller feature extraction
+    ↓
+Heuristic risk engine + optional LR / RF / CodeBERT outputs
+    ↓
+Thresholded local FAISS retrieval
+    ↓
+Groq explanation from derived metadata, or local fallback
+    ↓
+FastAPI → React dashboard → SQLite reviews and human decisions
+```
+
+The explanation component receives the score, triggered signal names, and evidence summary; it does not receive the raw diff. If no indexed example meets the configured similarity threshold, the review reports that no close match was found and continues without evidence.
+
+## Pre-push hook (optional)
+
+Install the hook in this repository with:
 
 ```bash
 prscore install-hook --repo . --hook pre-push
 ```
 
-The installer refuses to overwrite an existing hook. The hook blocks if risk
-scoring fails or any pushed commit reaches `RISK_THRESHOLD` (default 60).
+The installer refuses to overwrite an existing hook. The hook blocks if scoring fails or if a pushed commit reaches `RISK_THRESHOLD` (default `60`). A recorded decision does not itself bypass the risk threshold.
 
-### Troubleshooting and limitations
+## Development
 
-- If port 8000 or 5173 is occupied, stop the existing project process or choose
-  another port and update the dashboard API configuration accordingly.
-- If the dashboard says API disconnected, check the backend at
-  <http://127.0.0.1:8000/health> and confirm both processes use the intended
-  demo database setup.
-- “No close historical match” means no indexed result met the configured RAG
-  similarity threshold; the score and review can still be used.
-- The live author bug-rate feature is currently a zero placeholder. Scores are
-  triage signals and have not been calibrated for every repository.
-- Groq requires a valid key and network access. Without it the local
-  explanation fallback is used; retrieval also requires the local index and
-  embedding model to be available.
+```bash
+make test       # Python tests
+make lint       # Ruff checks
+make format     # Black formatting
+npm --prefix dashboard run build
+```
 
-See [`submission/RESULTS.md`](submission/RESULTS.md) for the evaluation
-definitions, intervals, and limitations.
+## Limitations
+
+- The live CLI currently uses `0.0` as the author bug-rate feature; it does not yet calculate repository-specific author history.
+- Evaluation results come from the checked-in ApacheJIT split and may not generalize to other projects.
+- SZZ-derived labels can be noisy. The score is for review prioritization, not a calibrated guarantee.
+- Retrieval depends on the local index and embedding model. A missing index or below-threshold result does not prevent scoring.
+- Groq needs a valid key and network access. Without it, explanations use the local fallback.
+
+## Project resources
+
+- [Evaluation results](submission/RESULTS.md)
+- [Full project report](submission/REPORT.md)
+- [Five-minute demo script](submission/DEMO_SCRIPT.md)
+- [Presentation outline](submission/PPT_OUTLINE.md)
+- [Viva questions and answers](submission/VIVA_QA.md)
+- [Usage guide](submission/guide.html)
+- [Project rationale](IDEA.md) · [Development plan](PLANNING.md)
+
+## Credits
+
+| Credit | Attribution |
+|---|---|
+| Project author | [@funterpie](https://github.com/funterpie) |
+| Project | PR Risk Scorer — SMIT Batch 10 Final Year Project |
+| Evaluation dataset | [ApacheJIT](https://arxiv.org/abs/2203.00101) |
+| Core methods and tools | PyDriller, scikit-learn, CodeBERT, FAISS, FastAPI, React, and SQLite |
