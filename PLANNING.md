@@ -1,3 +1,6 @@
+# Well, honestly, I didn't work on this plan
+
+
 # PLANNING.md — PR Risk Scorer
 
 Solo build · ~50-60 hours · Ubuntu dev machine · Colab free tier · deadline soft ~1 month (extendable if results are strong)
