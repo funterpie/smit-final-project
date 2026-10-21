@@ -1,0 +1,52 @@
+Extracting features from /tmp/prscore-demo.7Or9xp/low @ 
+092e484c5c5f810574d5a4bcb4d18020b7699dfd...
+[codebert] Loading model from models/artefacts/codebert/best_model (first call — cached for session)
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 10398.07it/s]
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 2480.78it/s]
+
+────────── PR Risk Scorer — 092e484c5c5f810574d5a4bcb4d18020b7699dfd ───────────
+
+  Risk Score:  0/100
+  Baseline (RF) prob: 0.120
+  CodeBERT prob:     0.075
+                                                                                
+                                Signal Breakdown                                
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Signal                   ┃ Weight ┃ Triggered ┃ Description                  ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ large_diff               │     25 │     ✗     │ Diff has 24 lines changed    │
+│                          │        │           │ (threshold: >300).           │
+├──────────────────────────┼────────┼───────────┼──────────────────────────────┤
+│ touches_sensitive_module │     30 │     ✗     │ At least one changed file is │
+│                          │        │           │ inside a security-critical   │
+│                          │        │           │ module.                      │
+├──────────────────────────┼────────┼───────────┼──────────────────────────────┤
+│ high_author_bug_rate     │     20 │     ✗     │ Author's historical bug rate │
+│                          │        │           │ is 0% (threshold: >30%).     │
+├──────────────────────────┼────────┼───────────┼──────────────────────────────┤
+│ no_tests                 │     15 │     ✗     │ No test files were added or  │
+│                          │        │           │ modified in this commit.     │
+├──────────────────────────┼────────┼───────────┼──────────────────────────────┤
+│ high_dispersion          │     10 │     ✗     │ Change dispersion is 2.0     │
+│                          │        │           │ (>3.0 indicates              │
+│                          │        │           │ cross-cutting changes).      │
+├──────────────────────────┼────────┼───────────┼──────────────────────────────┤
+│ ml_model_flag            │     20 │     ✗     │ ML model probability 0.12    │
+│                          │        │           │ does not exceed threshold    │
+│                          │        │           │ 0.5.                         │
+└──────────────────────────┴────────┴───────────┴──────────────────────────────┘
+
+  📎 Similar past bug commit  (similarity=0.78)
+  apache/flink | +200/-111 lines | 7 files | dispersion=2.11
+╭────────────────────────────── LLM Explanation  ──────────────────────────────╮
+│ Assessment: low risk. Risk score: 0/100. No triggered risk signals were      │
+│ reported. Historical evidence: commit_hash:                                  │
+│ fff04bfbea5eeb3fc0d6a59db961c4b678ceab58; similarity: 0.7828; summary:       │
+│ apache/flink | +200/-111 lines | 7 files | dispersion=2.11 This explanation  │
+│ was generated locally; review the assessment and relevant code changes       │
+│ before making a decision.                                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+  ⚠ Human decision required: run prscore decide to log your review.
+
+Review saved to the audit log (review id 1).

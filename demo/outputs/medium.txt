@@ -1,0 +1,52 @@
+Extracting features from /tmp/prscore-demo.7Or9xp/medium @ 
+b0530a5a3ef1b7b37693288cdc8e540b917533e0...
+[codebert] Loading model from models/artefacts/codebert/best_model (first call — cached for session)
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 9957.19it/s]
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 11256.50it/s]
+
+────────── PR Risk Scorer — b0530a5a3ef1b7b37693288cdc8e540b917533e0 ───────────
+
+  Risk Score:  45/100
+  Baseline (RF) prob: 0.187
+  CodeBERT prob:     0.068
+                                                                                
+                                Signal Breakdown                                
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Signal                   ┃ Weight ┃ Triggered ┃ Description                  ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ large_diff               │     25 │     ✗     │ Diff has 25 lines changed    │
+│                          │        │           │ (threshold: >300).           │
+├──────────────────────────┼────────┼───────────┼──────────────────────────────┤
+│ touches_sensitive_module │     30 │     ✓     │ At least one changed file is │
+│                          │        │           │ inside a security-critical   │
+│                          │        │           │ module.                      │
+├──────────────────────────┼────────┼───────────┼──────────────────────────────┤
+│ high_author_bug_rate     │     20 │     ✗     │ Author's historical bug rate │
+│                          │        │           │ is 0% (threshold: >30%).     │
+├──────────────────────────┼────────┼───────────┼──────────────────────────────┤
+│ no_tests                 │     15 │     ✓     │ No test files were added or  │
+│                          │        │           │ modified in this commit.     │
+├──────────────────────────┼────────┼───────────┼──────────────────────────────┤
+│ high_dispersion          │     10 │     ✗     │ Change dispersion is -0.0    │
+│                          │        │           │ (>3.0 indicates              │
+│                          │        │           │ cross-cutting changes).      │
+├──────────────────────────┼────────┼───────────┼──────────────────────────────┤
+│ ml_model_flag            │     20 │     ✗     │ ML model probability 0.19    │
+│                          │        │           │ does not exceed threshold    │
+│                          │        │           │ 0.5.                         │
+└──────────────────────────┴────────┴───────────┴──────────────────────────────┘
+
+  📎 Similar past bug commit  (similarity=0.78)
+  apache/groovy | +101/-15 lines | 2 files | dispersion=0.62
+╭────────────────────────────── LLM Explanation  ──────────────────────────────╮
+│ Assessment: medium risk. Risk score: 45/100. Triggered signals:              │
+│ touches_sensitive_module, no_tests. Historical evidence: commit_hash:        │
+│ f684bba53ec9e659ceb2acdedbca012cd81d35d5; similarity: 0.782; summary:        │
+│ apache/groovy | +101/-15 lines | 2 files | dispersion=0.62 This explanation  │
+│ was generated locally; review the assessment and relevant code changes       │
+│ before making a decision.                                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+  ⚠ Human decision required: run prscore decide to log your review.
+
+Review saved to the audit log (review id 2).
